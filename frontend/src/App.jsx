@@ -15,7 +15,6 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/structure" element={<StructurePage />} />
-
         {/* ✅ LOGIN PAGE ROUTE */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/ano-login" element={<AnoLogin />} />
