@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaShieldAlt, FaUserTie, FaUsers } from "react-icons/fa";
 import NavBar from "./NavBar";
+import LoginModal from "./LoginModal";
+import AnoLoginModal from "./AnoLoginModal";
 
 const StructurePage = () => {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAnoLogin, setShowAnoLogin] = useState(false);
   const cards = [
     {
       title: "ANO (Associate NCC Officer)",
@@ -23,7 +27,10 @@ const StructurePage = () => {
 
   return (
     <div className="page">
-      <NavBar />
+      <NavBar
+        onCadetLogin={() => setShowLogin(true)}
+        onAnoLogin={() => setShowAnoLogin(true)}
+      />
 
       {/* CONTENT WRAPPER */}
       <main className="about">
@@ -51,6 +58,11 @@ const StructurePage = () => {
         <p>© 2024 NCC Nexus - National Cadet Corps Digital Command Center</p>
         <span>Unity and Discipline</span>
       </footer>
+
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {showAnoLogin && (
+        <AnoLoginModal onClose={() => setShowAnoLogin(false)} />
+      )}
     </div>
   );
 };

@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { closeAboutCard, openAboutCard } from "../features/ui/uiSlice";
 import NavBar from "./NavBar";
+import LoginModal from "./LoginModal";
+import AnoLoginModal from "./AnoLoginModal";
 
 const AboutPage = () => {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAnoLogin, setShowAnoLogin] = useState(false);
   const dispatch = useDispatch();
   const activeCard = useSelector((state) => state.ui.activeAboutCard);
   const cards = [
@@ -32,7 +37,10 @@ const AboutPage = () => {
 
   return (
     <div className="page1">
-      <NavBar />
+      <NavBar
+        onCadetLogin={() => setShowLogin(true)}
+        onAnoLogin={() => setShowAnoLogin(true)}
+      />
 
       <main className="about">
         <header className="about-hero">
@@ -87,6 +95,11 @@ const AboutPage = () => {
           </div>
         </div>
       ) : null}
+
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {showAnoLogin && (
+        <AnoLoginModal onClose={() => setShowAnoLogin(false)} />
+      )}
     </div>
   );
 };
