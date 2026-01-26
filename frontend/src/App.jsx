@@ -1,18 +1,23 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-// ✅ 1. Import the New Master Home Component
+// ✅ 1. Landing & Auth Imports
 import Home from "./components/LandingPage/Home";
-
-// ✅ 2. Auth Routes (Still needed as separate pages for direct access)
 import LoginPage from "./components/LandingPage/LoginPage";
 import AnoLogin from "./components/LandingPage/AnoLogin";
 
-// ✅ 3. Cadet Module
+// ✅ 2. Cadet Module
 import CadetDashboard from "./components/Cadet/CadetDashboard";
+// Import remaining Cadet components if they are used as standalone routes
 import Feed from "./components/Cadet/Feed";
 import Chatbot from "./components/Cadet/Chatbot";
 
-// ✅ 4. Ano Module
+// ✅ 3. SUO Module (New)
+import SUODashboard from "./components/SUO/dashboard";
+
+// ✅ 4. Alumni Module (New)
+import AlumniDashboard from "./components/Alumni/dashboard";
+
+// ✅ 5. Ano Module
 import AnoDashboard from "./components/Ano/AnoDashboard";
 import AddCadet from "./components/Ano/AddCadet";
 import ManageCadets from "./components/Ano/ManageCadets";
@@ -21,23 +26,27 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ✅ SINGLE PAGE ROUTE (Ab Home.jsx sab handle karega) */}
+        {/* ✅ LANDING PAGE */}
         <Route path="/" element={<Home />} />
 
-        {/* ❌ REMOVED: /about aur /structure ab alag pages nahi hain */}
-        
         {/* ✅ AUTH ROUTES */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/ano-login" element={<AnoLogin />} />
 
-        {/* ✅ CADET DASHBOARD ROUTES */}
+        {/* ✅ CADET ROUTES */}
         <Route path="/dashboard" element={<CadetDashboard />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/chatbot" element={<Chatbot />} />
 
+        {/* ✅ SUO ROUTES (New) */}
+        <Route path="/suo-dashboard" element={<SUODashboard />} />
+
+        {/* ✅ ALUMNI ROUTES (New) */}
+        <Route path="/alumni-dashboard" element={<AlumniDashboard />} />
+
         {/* ✅ ANO DASHBOARD ROUTES */}
         <Route path="/ano/*" element={<AnoDashboard />}>
-          <Route index element={<AddCadet />} />   {/* default page */}
+          <Route index element={<AddCadet />} /> {/* default page */}
           <Route path="add-cadet" element={<AddCadet />} />
           <Route path="manage-cadets" element={<ManageCadets />} />
         </Route>
@@ -47,4 +56,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 

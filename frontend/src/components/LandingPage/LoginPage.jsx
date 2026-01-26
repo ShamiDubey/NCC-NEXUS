@@ -1,35 +1,43 @@
 import { useState } from "react";
-import { FaMedal, FaLock, FaTimes } from "react-icons/fa"; // Import FaTimes (Cross Icon)
+import { FaMedal, FaLock, FaTimes } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
 import nccLogo from "../assets/ncc-logo.png";
 
-// ✅ Accept onClose prop
 const LoginPage = ({ isModal = false, onClose }) => {
   const navigate = useNavigate();
   const [role, setRole] = useState("CADET");
 
+  // ✅ Updated Login Logic
   const handleLogin = () => {
-    if (role === "CADET") navigate("/dashboard");
-    else alert("Dashboard under construction");
+    if (role === "CADET") {
+      navigate("/dashboard");
+    } else if (role === "SUO") {
+      navigate("/suo-dashboard");
+    } else if (role === "ALUMNI") {
+      navigate("/alumni-dashboard");
+    } else {
+      alert("Invalid Role Selected");
+    }
+    
+    // Agar login modal ke andar hai, toh redirect ke baad modal band kardein
+    if (isModal && onClose) {
+      onClose();
+    }
   };
 
   const card = (
     <div className="login-card">
-      {/* ✅ CLOSE BUTTON (Only show if isModal is true) */}
       {isModal && (
         <button className="card-close-btn" onClick={onClose}>
           <FaTimes />
         </button>
       )}
 
-      {/* 1. Glow Effect */}
       <span className="card-glow" />
 
-      {/* 2. Logo & Header */}
       <img src={nccLogo} alt="NCC Logo" className="login-logo" />
       <h1 className="login-title">NCC NEXUS</h1>
       
-      {/* 3. Role Switcher */}
       <div className="role-select">
         {["CADET", "SUO", "ALUMNI"].map((item) => (
           <button
@@ -43,7 +51,6 @@ const LoginPage = ({ isModal = false, onClose }) => {
         ))}
       </div>
 
-      {/* 4. Inputs */}
       <div className="login-form">
         <div className="input-wrapper">
           <div className="input-group has-icon">
