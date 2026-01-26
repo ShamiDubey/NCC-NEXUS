@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-
+import "./resetPassword.css";
 
 const ResetPasswordModal = ({ onClose }) => {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -13,7 +13,7 @@ const ResetPasswordModal = ({ onClose }) => {
         className="modal-card reset-modal-card"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
+        {/* Close Button */}
         <button className="modal-close3" onClick={onClose}>
           ✕
         </button>
@@ -23,7 +23,9 @@ const ResetPasswordModal = ({ onClose }) => {
         <div className="reset-form">
           {/* Current Password */}
           <div className="input-group">
-            <FaLock className="input-icon" />
+            <div className="input-icon-wrapper">
+              <FaLock className="input-icon" />
+            </div>
             <input
               type={showCurrent ? "text" : "password"}
               placeholder="Current Password"
@@ -38,7 +40,9 @@ const ResetPasswordModal = ({ onClose }) => {
 
           {/* New Password */}
           <div className="input-group">
-            <FaLock className="input-icon" />
+            <div className="input-icon-wrapper">
+              <FaLock className="input-icon" />
+            </div>
             <input
               type={showNew ? "text" : "password"}
               placeholder="New Password"
@@ -53,7 +57,9 @@ const ResetPasswordModal = ({ onClose }) => {
 
           {/* Confirm Password */}
           <div className="input-group">
-            <FaLock className="input-icon" />
+            <div className="input-icon-wrapper">
+              <FaLock className="input-icon" />
+            </div>
             <input
               type={showConfirm ? "text" : "password"}
               placeholder="Confirm New Password"

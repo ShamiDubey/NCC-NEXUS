@@ -1,0 +1,264 @@
+import React, { useState, useRef } from "react";
+import {
+  User,
+  MapPin,
+  Image as ImageIcon,
+  LogOut,
+  Camera,
+  Edit2,
+  KeyRound,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import "./dashboard.css";
+import logoImage from "../assets/ncc-logo.png"; // Adjusted path to assets
+import Feed from "./feed";
+import ResetPasswordModal from "./resetPassword";
+import Chatbot from "./chatbot";
+// Assuming these actions exist in your uiSlice for the SUO role
+import { closeSUOSidebar, toggleSUOSidebar } from "../../features/ui/uiSlice";
+
+export default function SUODashboard() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Adjusted selector to use the SUO-specific sidebar state
+  const isSUOSidebarOpen = useSelector((state) => state.ui.isSUOSidebarOpen);
+
+  const [activeTab, setActiveTab] = useState("profile");
+  const [showReset, setShowReset] = useState(false);
+
+  const [profileImage, setProfileImage] = useState(
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d" // Updated default placeholder
+  );
+
+  const [profileData, setProfileData] = useState({
+    name: "Aman Singh",
+    rank: "Senior Under Officer (SUO)",
+    location: "1 PB BN NCC, Ludhiana",
+    bio:
+      "Leading with integrity. Responsible for unit discipline and training coordination.",
+  });
+
+  const fileInputRef = useRef(null);
+
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setProfileImage(URL.createObjectURL(file));
+  };
+
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [tempBio, setTempBio] = useState("");
+
+  const startEditBio = () => {
+    setTempBio(profileData.bio);
+    setIsEditingBio(true);
+  };
+
+  const saveBio = () => {
+    if (tempBio.trim()) {
+      setProfileData({ ...profileData, bio: tempBio.trim() });
+    }
+    setIsEditingBio(false);
+  };
+
+  const cancelEditBio = () => {
+    setIsEditingBio(false);
+    setTempBio("");
+  };
+
+  return (
+    <>
+      {showReset && (
+        <ResetPasswordModal onClose={() => setShowReset(false)} />
+      )}
+
+      <div className="layout">
+        {/* ================= SIDEBAR ================= */}
+        {isSUOSidebarOpen ? (
+          <button
+            type="button"
+            className="suo-sidebar-backdrop"
+            aria-label="Close sidebar"
+            onClick={() => dispatch(closeSUOSidebar())}
+          />
+        ) : null}
+
+        <aside className={`sidebar${isSUOSidebarOpen ? " open" : ""}`}>
+          <div>
+            <div className="sidebar-header">
+              <img src={logoImage} className="sidebar-logo" alt="NCC Logo" />
+              <div className="logo-text">
+                <h1>NCC NEXUS</h1>
+                <p>SUO DASHBOARD</p>
+              </div>
+            </div>
+
+            <div className="nav-list">
+              <button
+                className={`nav-item ${activeTab === "profile" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("profile");
+                  dispatch(closeSUOSidebar());
+                }}
+              >
+                <User size={18} />
+                <span>Profile</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === "feed" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("feed");
+                  dispatch(closeSUOSidebar());
+                }}
+              >
+                <MapPin size={18} />
+                <span>Feed</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === "chatbot" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("chatbot");
+                  dispatch(closeSUOSidebar());
+                }}
+              >
+                🤖 <span>Assistant</span>
+              </button>
+
+              <button className="nav-item">
+                <ImageIcon size={18} />
+                <span>Management</span>
+              </button>
+
+              <button
+                className="nav-item"
+                onClick={() => {
+                  setShowReset(true);
+                  dispatch(closeSUOSidebar());
+                }}
+              >
+                <KeyRound size={18} />
+                <span>Reset Password</span>
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="logout-item"
+            onClick={() => {
+              dispatch(closeSUOSidebar());
+              navigate("/");
+            }}
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </aside>
+
+        {/* ================= MAIN ================= */}
+        <main className="main">
+          <div className="suo-topbar">
+            <button
+              type="button"
+              className="suo-sidebar-toggle"
+              aria-label="Toggle sidebar"
+              onClick={() => dispatch(toggleSUOSidebar())}
+            >
+              ☰
+            </button>
+          </div>
+          
+          {activeTab === "chatbot" && <Chatbot />}
+
+          {activeTab === "feed" && (
+            <Feed
+              profileImage={profileImage}
+              profileName={profileData.name}
+              mode="feed"
+            />
+          )}
+
+          {activeTab === "profile" && (
+            <>
+              <div className="banner">
+                <div className="profile-photo-wrapper">
+                  <img src={profileImage} className="profile-photo" alt="SUO Profile" />
+                  <button
+                    className="camera-icon"
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    <Camera size={16} />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    hidden
+                    onChange={handleProfileImageChange}
+                  />
+                </div>
+              </div>
+
+              <div className="profile-details">
+                <h1 className="profile-name">{profileData.name}</h1>
+
+                <div className="profile-info">
+                  <div className="info-pill">
+                    <User size={16} />
+                    {profileData.rank}
+                  </div>
+                  <div className="info-pill">
+                    <MapPin size={16} />
+                    {profileData.location}
+                  </div>
+                </div>
+
+                <div className="bio-container">
+                  {isEditingBio ? (
+                    <div className="bio-edit-mode">
+                      <textarea
+                        className="bio-edit-textarea"
+                        value={tempBio}
+                        onChange={(e) => setTempBio(e.target.value)}
+                      />
+                      <div className="bio-edit-actions">
+                        <button className="bio-save-btn" onClick={saveBio}>
+                          Save
+                        </button>
+                        <button
+                          className="bio-cancel-btn"
+                          onClick={cancelEditBio}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bio-display">
+                      <p className="bio">"{profileData.bio}"</p>
+                      <button
+                        className="bio-edit-icon"
+                        onClick={startEditBio}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <h2 className="section-title">SUO Activity Log</h2>
+
+              <Feed
+                profileImage={profileImage}
+                profileName={profileData.name}
+                mode="profile"
+              />
+            </>
+          )}
+        </main>
+      </div>
+    </>
+  );
+}
