@@ -8,7 +8,7 @@ const db = require("./db/knex");
 // Import Routes
 const authRoutes = require("./routes/auth.routes");
 const anoRoutes = require("./routes/ano.routes");
-// const chatRoutes = require("./routes/chat.routes"); // Uncomment when chat is ready
+const chatRoutes = require("./routes/chat.routes");
 
 const app = express();
 
@@ -49,7 +49,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/ano", anoRoutes);
 
 // Chat System (Existing)
-// app.use("/api/chat", chatRoutes); // Uncomment when ready
+app.use("/api/chat", chatRoutes);
 
 // ------------------------------------------
 // 3. Global Error Handler
