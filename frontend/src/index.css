@@ -30,6 +30,11 @@
   --accent-glow: rgba(140, 169, 255, 0.4);
   --accent-dim: rgba(140, 169, 255, 0.1);
 
+  /* --- NCC TRICOLOR PALETTE (Army · Navy · Air) --- */
+  --tricolor-red: #DC143C;
+  --tricolor-navy: #1B2A6B;
+  --tricolor-lightblue: #5BC0EB;
+
   /* --- 🖋 TYPOGRAPHY TOKENS --- */
   --font-display: "Marcellus", serif;
   --font-body: "Poppins", sans-serif; /* Switched to Poppins as requested */
@@ -77,8 +82,7 @@ html {
 body {
   font-family: var(--font-body);
   background-color: transparent;
-  /* Use image.png as fixed background */
-  background-image: url('/src/components/assets/image.png');
+  background-image: url('/src/components/assets/ncc-parade.jpeg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -101,10 +105,10 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-void);
+  background: #f1f1f1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #c1c1c1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -113,7 +117,7 @@ body {
 
 /* --- UTILITY CLASSES --- */
 .text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #4a5fc1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -128,6 +132,25 @@ body {
    3. NAVIGATION BAR (Interactive & Glass)
    --------------------------------------------------------------------------
 */
+/* Tricolor strip at the very top of the page */
+.nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--tricolor-red) 0%,
+    var(--tricolor-red) 33.33%,
+    var(--tricolor-navy) 33.33%,
+    var(--tricolor-navy) 66.66%,
+    var(--tricolor-lightblue) 66.66%,
+    var(--tricolor-lightblue) 100%
+  );
+  z-index: 10;
+}
+
 .nav {
   position: fixed;
   top: 0;
@@ -138,13 +161,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 clamp(24px, 5vw, 80px);
-  
-  /* Modern Glass Effect */
+  padding: 4px clamp(24px, 5vw, 80px) 0;
+
+  /* White Glass Effect */
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(140, 169, 255, 0.2);
+  border-bottom: 1px solid rgba(140, 169, 255, 0.12);
   transition: all var(--speed-normal) var(--ease-smooth);
 }
 
@@ -152,7 +175,7 @@ body {
   height: 70px;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid var(--accent-dim);
+  border-bottom: 1px solid rgba(140, 169, 255, 0.15);
 }
 
 /* --- BRANDING BLOCK --- */
@@ -328,14 +351,16 @@ body {
   top: calc(100% + 15px);
   right: 0;
   width: 220px;
-  background: #ffffff;
-  border: 1px solid rgba(140, 169, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(140, 169, 255, 0.2);
   border-radius: var(--radius-md);
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 20px 40px -10px rgba(140, 169, 255, 0.2);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   opacity: 0;
   transform: translateY(10px);
   animation: slideInMenu 0.3s forwards var(--ease-snappy);
@@ -358,9 +383,9 @@ body {
 }
 
 .login-menu button:hover {
-  background: rgba(140, 169, 255, 0.1);
-  color: var(--accent-secondary);
-  padding-left: 20px; /* Slide effect */
+  background: rgba(140, 169, 255, 0.15);
+  color: var(--text-accent);
+  padding-left: 20px;
 }
 
 /* --------------------------------------------------------------------------
@@ -385,12 +410,44 @@ body {
   flex-direction: column;
   justify-content: center;
   z-index: 1;
-  background: transparent;
 }
 
-/* About page specific adjustment if needed */
+/* White overlay for subtle parade image visibility */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.82);
+  z-index: 0;
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* About page with white overlay */
 .page1 {
-  @extend .page;
+  position: relative;
+  min-height: 100vh;
+  padding: 120px clamp(20px, 5vw, 60px) 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+
+.page1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 0;
+}
+
+.page1 > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* --------------------------------------------------------------------------
@@ -419,18 +476,18 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(170, 196, 245, 0.15);
-  border: 1px solid rgba(140, 169, 255, 0.3);
+  background: rgba(105, 111, 199, 0.1);
+  border: 1px solid rgba(105, 111, 199, 0.3);
   border-radius: 100px;
-  color: var(--accent-secondary);
+  color: var(--text-accent);
   font-family: var(--font-tech);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 30px;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 0 20px rgba(140, 169, 255, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(140, 169, 255, 0.15);
   animation: fadeDown 0.8s ease-out;
 }
 
@@ -449,7 +506,7 @@ body {
   line-height: 1.1;
   color: #1a1a1a;
   margin-bottom: 20px;
-  text-shadow: 0 0 40px rgba(140, 169, 255, 0.1);
+  text-shadow: none;
   animation: fadeUp 0.8s 0.2s backwards;
 }
 
@@ -457,7 +514,7 @@ body {
   font-family: var(--font-body);
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--accent-secondary);
+  color: var(--text-accent);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   margin-bottom: 24px;
@@ -471,7 +528,7 @@ body {
   content: '';
   height: 1px;
   flex: 1;
-  background: linear-gradient(90deg, var(--accent-secondary), transparent);
+  background: linear-gradient(90deg, rgba(170, 196, 245, 0.6), transparent);
   opacity: 0.5;
 }
 
@@ -518,15 +575,15 @@ body {
 }
 
 .hero-actions .secondary {
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(140, 169, 255, 0.2);
-  color: #1a1a1a;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(140, 169, 255, 0.3);
+  color: var(--text-main);
   backdrop-filter: blur(10px);
 }
 
 .hero-actions .secondary:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--accent-secondary);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(140, 169, 255, 0.6);
   transform: translateY(-4px);
 }
 
@@ -554,69 +611,72 @@ body {
   justify-content: center;
 }
 
-/* 🇮🇳 PRIMARY RING (Saffron, White, Green Gradient) */
+/* NCC PRIMARY RING (Red, Navy Blue, Light Blue — Army · Navy · Air) */
 .glow-ring::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  
-  /* Smooth blue glow gradient */
+
+  /* NCC Tricolor conic gradient */
   background: conic-gradient(
     from 0deg,
-    #AAC4F5 0%,
-    #8CA9FF 25%,
-    #6B89CC 50%,
-    #8CA9FF 75%,
-    #AAC4F5 100%
+    var(--tricolor-red) 0%,
+    var(--tricolor-red) 20%,
+    var(--tricolor-navy) 30%,
+    var(--tricolor-navy) 50%,
+    var(--tricolor-lightblue) 60%,
+    var(--tricolor-lightblue) 80%,
+    var(--tricolor-red) 90%,
+    var(--tricolor-red) 100%
   );
-  
+
   /* Mask to create the ring shape */
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  mask: 
-    linear-gradient(#fff 0 0) content-box, 
+  mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  
+
   /* Animation: Slow Rotation */
-  animation: spinTricolor 3s linear infinite;
-  
+  animation: spinTricolor 4s linear infinite;
+
   /* Soft professional glow */
-  filter: blur(10px) drop-shadow(0 0 25px rgba(140, 169, 255, 0.6));
+  filter: blur(8px) drop-shadow(0 0 20px rgba(220, 20, 60, 0.4)) drop-shadow(0 0 20px rgba(91, 192, 235, 0.4));
   z-index: 1;
 }
 
-/* 🇮🇳 SECONDARY RING (Adds depth and a counter-spin effect) */
+/* NCC SECONDARY RING (Broader glow, counter-spin) */
 .glow-ring::after {
   content: '';
   position: absolute;
   inset: -15px;
   border-radius: 50%;
-  
-  /* Smooth blue glow */
+
+  /* NCC tricolor counter-spin glow */
   background: conic-gradient(
     from 180deg,
-    #AAC4F5 0%,
-    #8CA9FF 40%,
-    #6B89CC 50%,
-    #8CA9FF 60%,
-    #AAC4F5 100%
+    var(--tricolor-lightblue) 0%,
+    var(--tricolor-navy) 25%,
+    var(--tricolor-red) 50%,
+    var(--tricolor-navy) 75%,
+    var(--tricolor-lightblue) 100%
   );
-  
+
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  
+
   /* Slower rotation in opposite direction */
-  animation: spinTricolorReverse 6s linear infinite;
-  
+  animation: spinTricolorReverse 8s linear infinite;
+
   /* Broader softer glow */
-  filter: blur(20px) drop-shadow(0 0 40px rgba(140, 169, 255, 0.4));
-  opacity: 0.6;
+  filter: blur(18px) drop-shadow(0 0 30px rgba(220, 20, 60, 0.3)) drop-shadow(0 0 30px rgba(91, 192, 235, 0.3));
+  opacity: 0.5;
   z-index: 0;
 }
 
@@ -625,20 +685,20 @@ body {
   width: 76%;
   height: 76%;
   border-radius: 50%;
-  background: radial-gradient(circle at center, #ffffff 0%, #f5f5f5 100%);
-  
+  background: radial-gradient(circle at center, rgba(255,255,255,0.95) 0%, rgba(240,240,250,0.9) 100%);
+
   /* No border - cleaner look */
   border: none;
-  
+
   overflow: hidden;
   /* Enhanced glow effect */
-  box-shadow: 
-    0 0 30px rgba(140, 169, 255, 0.5),
-    0 0 60px rgba(170, 196, 245, 0.3),
+  box-shadow:
+    0 0 40px rgba(140, 169, 255, 0.6),
+    0 0 80px rgba(170, 196, 245, 0.35),
     inset 0 0 20px rgba(140, 169, 255, 0.1);
-  
+
   position: relative;
-  z-index: 2; 
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -693,6 +753,25 @@ body {
   font-size: 3rem;
   margin-bottom: 20px;
   color: var(--text-main);
+  position: relative;
+  display: inline-block;
+}
+
+.about-hero h1::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg,
+    var(--tricolor-red) 0%,
+    var(--tricolor-red) 33%,
+    var(--tricolor-navy) 33%,
+    var(--tricolor-navy) 66%,
+    var(--tricolor-lightblue) 66%,
+    var(--tricolor-lightblue) 100%
+  );
+  border-radius: 2px;
 }
 
 .about-hero p {
@@ -713,6 +792,7 @@ body {
   border: 1px solid rgba(140, 169, 255, 0.15);
   border-radius: var(--radius-lg);
   padding: 40px 30px;
+  padding-top: 44px;
   overflow: hidden;
   cursor: pointer;
   transition: all var(--speed-normal) var(--ease-smooth);
@@ -720,7 +800,34 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  group: card;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Top accent bar on each card */
+.about-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  transition: height var(--speed-normal) var(--ease-smooth);
+}
+
+/* Unique accent colors per card (NCC Wing colors) */
+.about-card:nth-child(1)::after {
+  background: linear-gradient(90deg, var(--tricolor-red), #e74c3c);
+}
+.about-card:nth-child(2)::after {
+  background: linear-gradient(90deg, var(--tricolor-navy), #2c3e8c);
+}
+.about-card:nth-child(3)::after {
+  background: linear-gradient(90deg, var(--tricolor-lightblue), #87CEEB);
+}
+.about-card:nth-child(4)::after {
+  background: linear-gradient(90deg, var(--tricolor-red), var(--tricolor-navy));
 }
 
 /* Card Glow Effect */
@@ -731,7 +838,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at top right, rgba(164, 196, 79, 0.15), transparent 50%);
+  background: radial-gradient(circle at top right, rgba(140, 169, 255, 0.15), transparent 50%);
   opacity: 0;
   transition: opacity var(--speed-normal);
 }
@@ -739,20 +846,37 @@ body {
 .about-card:hover {
   transform: translateY(-10px);
   background: rgba(255, 255, 255, 0.95);
-  border-color: var(--accent-dim);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  border-color: rgba(140, 169, 255, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+}
+
+.about-card:hover::after {
+  height: 5px;
 }
 
 .about-card:hover::before {
   opacity: 1;
 }
 
+/* Unique icon colors per card (NCC Wing themed) */
+.about-card:nth-child(1) .about-icon { color: var(--tricolor-red); border-color: rgba(220, 20, 60, 0.2); background: rgba(220, 20, 60, 0.08); }
+.about-card:nth-child(1):hover .about-icon { background: var(--tricolor-red); color: #fff; box-shadow: 0 0 30px rgba(220, 20, 60, 0.4); }
+
+.about-card:nth-child(2) .about-icon { color: var(--tricolor-navy); border-color: rgba(27, 42, 107, 0.2); background: rgba(27, 42, 107, 0.08); }
+.about-card:nth-child(2):hover .about-icon { background: var(--tricolor-navy); color: #fff; box-shadow: 0 0 30px rgba(27, 42, 107, 0.4); }
+
+.about-card:nth-child(3) .about-icon { color: var(--tricolor-lightblue); border-color: rgba(91, 192, 235, 0.2); background: rgba(91, 192, 235, 0.08); }
+.about-card:nth-child(3):hover .about-icon { background: var(--tricolor-lightblue); color: #fff; box-shadow: 0 0 30px rgba(91, 192, 235, 0.4); }
+
+.about-card:nth-child(4) .about-icon { color: var(--tricolor-red); border-color: rgba(220, 20, 60, 0.2); background: rgba(220, 20, 60, 0.08); }
+.about-card:nth-child(4):hover .about-icon { background: var(--tricolor-red); color: #fff; box-shadow: 0 0 30px rgba(220, 20, 60, 0.4); }
+
 /* Icon Styling */
 .about-icon {
   width: 70px;
   height: 70px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(140, 169, 255, 0.08);
   border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
@@ -768,7 +892,7 @@ body {
 
 .about-card:hover .about-icon {
   background: var(--accent-primary);
-  color: var(--bg-void);
+  color: #ffffff;
   transform: scale(1.1) rotate(10deg);
   box-shadow: 0 0 30px var(--accent-glow);
 }
@@ -807,6 +931,8 @@ body {
   flex: 0 1 360px;
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(140, 169, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .structure-icon {
@@ -830,7 +956,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   animation: fadeIn 0.3s ease-out forwards;
@@ -852,14 +978,15 @@ body {
   max-width: 440px;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: 24px;
   margin: 24px 0;
   padding: 48px 40px;
   position: relative;
-  border: 1px solid rgba(140, 169, 255, 0.2);
-  box-shadow: 
-    0 25px 60px -12px rgba(140, 169, 255, 0.2),
-    inset 0 1px 0 rgba(170, 196, 245, 0.2);
+  border: 1px solid rgba(140, 169, 255, 0.18);
+  box-shadow:
+    0 25px 60px -12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(170, 196, 245, 0.1);
   display: flex;
   flex-direction: column;
 }
@@ -880,9 +1007,9 @@ body {
   right: -20%;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(140, 169, 255, 0.3), transparent 70%);
+  background: radial-gradient(circle, rgba(140, 169, 255, 0.2), transparent 70%);
   filter: blur(60px);
-  opacity: 0.5;
+  opacity: 0.4;
   pointer-events: none;
   z-index: 0;
 }
@@ -895,8 +1022,8 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(140, 169, 255, 0.05);
-  border: 1px solid rgba(140, 169, 255, 0.2);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   color: var(--text-muted);
   display: flex;
   align-items: center;
@@ -925,7 +1052,7 @@ body {
 .login-title, .ano-header h1 {
   font-family: var(--font-display);
   font-size: 1.6rem;
-  color: #1a1a1a;
+  color: var(--text-main);
   text-align: center;
   margin-bottom: 8px;
   position: relative;
@@ -934,21 +1061,21 @@ body {
 
 /* 🔥 UPDATED: Center the "Associate NCC Officer Access" Subtitle */
 .ano-header p {
-  text-align: center;      /* Forces center alignment */
+  text-align: center;
   color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: 24px;
-  width: 100%;             /* Ensures it spans full width to center correctly */
+  width: 100%;
 }
 
 /* --- ROLE SWITCHER (The Pill) --- */
 .role-select {
   display: flex;
-  background: rgba(170, 196, 245, 0.08);
+  background: rgba(0, 0, 0, 0.04);
   padding: 5px;
   border-radius: 14px;
   margin-bottom: 30px;
-  border: 1px solid rgba(140, 169, 255, 0.2);
+  border: 1px solid rgba(140, 169, 255, 0.15);
   position: relative;
   z-index: 2;
 }
@@ -972,9 +1099,9 @@ body {
 }
 
 .role-select button.active {
-  background: rgba(170, 196, 245, 0.2);
-  color: var(--accent-secondary);
-  box-shadow: 0 4px 10px rgba(140, 169, 255, 0.15);
+  background: rgba(140, 169, 255, 0.2);
+  color: #AAC4F5;
+  box-shadow: 0 4px 10px rgba(140, 169, 255, 0.2);
 }
 
 /* --- INPUT FIELDS (High Tech) --- */
@@ -993,18 +1120,18 @@ body {
 .login-card input, .ano-card input {
   width: 100%;
   height: 56px;
-  background: rgba(200, 200, 200, 0.3);
+  background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(140, 169, 255, 0.2);
   border-radius: 12px;
   padding: 0 16px;
-  color: #000000;
+  color: var(--text-main);
   font-family: var(--font-body);
   font-size: 0.95rem;
   transition: all 0.3s ease;
 }
 
 .login-card input::placeholder, .ano-card input::placeholder {
-  color: #333333;
+  color: #999999;
 }
 
 
@@ -1020,8 +1147,8 @@ body {
 .login-card input:focus, .ano-card input:focus {
   outline: none;
   border-color: var(--accent-secondary);
-  background: rgba(200, 200, 200, 0.5);
-  box-shadow: 0 0 0 4px var(--accent-dim);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 4px rgba(140, 169, 255, 0.15);
 }
 
 /* Icons inside Input */
@@ -1116,30 +1243,292 @@ body {
 
 /* 🔥 UPDATED: Center the "This system is for authorized use only..." Text */
 .ano-footer-text {
-  text-align: center;       /* Forces center alignment */
+  text-align: center;
   width: 100%;
   margin-top: 24px;
   font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
 /* --------------------------------------------------------------------------
-   9. FOOTER
+   8.5 NCC STATS / HIGHLIGHTS BAR (Below hero buttons)
+   --------------------------------------------------------------------------
+*/
+.ncc-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(140, 169, 255, 0.15);
+  animation: fadeUp 0.8s 0.7s backwards;
+}
+
+.ncc-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ncc-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ncc-stat-icon.red {
+  background: rgba(220, 20, 60, 0.12);
+  color: var(--tricolor-red);
+}
+
+.ncc-stat-icon.navy {
+  background: rgba(27, 42, 107, 0.12);
+  color: var(--tricolor-navy);
+}
+
+.ncc-stat-icon.lightblue {
+  background: rgba(91, 192, 235, 0.12);
+  color: var(--tricolor-lightblue);
+}
+
+.ncc-stat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ncc-stat-value {
+  font-family: var(--font-tech);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.ncc-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------------------------------------
+   8.6 NCC MOTTO BANNER (Between sections)
+   --------------------------------------------------------------------------
+*/
+.ncc-motto-banner {
+  position: relative;
+  padding: 40px 20px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.ncc-motto-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.88);
+  z-index: 0;
+}
+
+.ncc-motto-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.motto-tricolor-line {
+  width: 120px;
+  height: 3px;
+  margin: 0 auto 16px;
+  background: linear-gradient(90deg,
+    var(--tricolor-red) 0%,
+    var(--tricolor-red) 33%,
+    var(--tricolor-navy) 33%,
+    var(--tricolor-navy) 66%,
+    var(--tricolor-lightblue) 66%,
+    var(--tricolor-lightblue) 100%
+  );
+  border-radius: 2px;
+}
+
+.ncc-motto-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.25em;
+  color: var(--text-main);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.ncc-motto-hindi {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* --------------------------------------------------------------------------
+   8.7 SCROLL DOWN INDICATOR
+   --------------------------------------------------------------------------
+*/
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: fadeUp 0.8s 1s backwards;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.scroll-indicator span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.scroll-mouse {
+  width: 24px;
+  height: 38px;
+  border: 2px solid rgba(105, 111, 199, 0.4);
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.scroll-mouse::before {
+  content: '';
+  width: 4px;
+  height: 8px;
+  background: #696FC7;
+  border-radius: 2px;
+  margin-top: 6px;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(10px); opacity: 0.3; }
+}
+
+/* --------------------------------------------------------------------------
+   8.8 TRICOLOR SECTION DIVIDER
+   --------------------------------------------------------------------------
+*/
+.tricolor-divider {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--tricolor-red) 20%,
+    var(--tricolor-red) 33%,
+    var(--tricolor-navy) 33%,
+    var(--tricolor-navy) 50%,
+    var(--tricolor-lightblue) 50%,
+    var(--tricolor-lightblue) 66%,
+    transparent 85%
+  );
+  opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   9. FOOTER (Enhanced NCC Theme)
    --------------------------------------------------------------------------
 */
 .site-footer {
   width: 100%;
-  background: transparent;
-  border-top: 1px solid rgba(140, 169, 255, 0.15);
-  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border-top: none;
+  padding: 0;
   text-align: center;
   margin-top: auto;
 }
 
-.site-footer p {
+.footer-tricolor-bar {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--tricolor-red) 0%,
+    var(--tricolor-red) 33.33%,
+    var(--tricolor-navy) 33.33%,
+    var(--tricolor-navy) 66.66%,
+    var(--tricolor-lightblue) 66.66%,
+    var(--tricolor-lightblue) 100%
+  );
+}
+
+.footer-content {
+  padding: 40px 20px 24px;
+}
+
+.footer-motto {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.3em;
+  color: var(--text-main);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.footer-motto-hindi {
+  font-size: 0.9rem;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+}
+
+.footer-wings {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.footer-wing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.footer-wing.army { color: var(--tricolor-red); }
+.footer-wing.navy { color: var(--tricolor-navy); }
+.footer-wing.air { color: var(--tricolor-lightblue); }
+
+.footer-wing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.footer-wing.army .footer-wing-dot { background: var(--tricolor-red); }
+.footer-wing.navy .footer-wing-dot { background: var(--tricolor-navy); }
+.footer-wing.air .footer-wing-dot { background: var(--tricolor-lightblue); }
+
+.footer-divider {
+  width: 80px;
+  height: 1px;
+  background: rgba(140, 169, 255, 0.25);
+  margin: 0 auto 16px;
+}
+
+.site-footer .footer-copyright {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0;
 }
 
 .site-footer span {
@@ -1236,7 +1625,7 @@ body {
   .hero-tagline {
     justify-content: center;
   }
-  
+
   .hero-tagline::after {
     display: none; /* Hide line on center alignment */
   }
@@ -1245,17 +1634,25 @@ body {
     justify-content: center;
   }
 
+  .ncc-stats {
+    justify-content: center;
+  }
+
   .hero-visual {
     order: -1; /* Move visual to top on mobile */
     margin-bottom: 20px;
   }
-  
+
   .glow-ring {
     width: 350px;
   }
 
   .page {
     padding-top: 100px;
+  }
+
+  .scroll-indicator {
+    display: none;
   }
 }
 
@@ -1302,11 +1699,19 @@ body {
   .hero-content h1 {
     font-size: 2.2rem;
   }
-  
+
   .hero-body {
     font-size: 1rem;
   }
-  
+
+  .ncc-stats {
+    gap: 20px;
+  }
+
+  .ncc-stat-value {
+    font-size: 1rem;
+  }
+
   .glow-ring {
     width: 280px;
     padding: 20px;
@@ -1315,9 +1720,20 @@ body {
   .modal-content {
     width: 95vw;
   }
-  
+
   .structure-card {
     flex: 1 1 100%;
+  }
+
+  .footer-wings {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ncc-motto-text {
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
   }
 }
 

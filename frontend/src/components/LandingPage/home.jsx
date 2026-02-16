@@ -22,11 +22,24 @@ const Home = () => {
 
       {/* 3. The Scrollable Sections */}
       <div className="sections-wrapper">
-        <HeroSection 
-          onCadetLogin={() => setShowLogin(true)} 
+        <HeroSection
+          onCadetLogin={() => setShowLogin(true)}
           onAnoLogin={() => setShowAnoLogin(true)}
         />
+
+        {/* NCC Motto Banner between Hero & About */}
+        <div className="ncc-motto-banner">
+          <div className="motto-tricolor-line" />
+          <p className="ncc-motto-text">Unity and Discipline</p>
+          <p className="ncc-motto-hindi">Ekta Aur Anushasan</p>
+          <div className="motto-tricolor-line" />
+        </div>
+
         <AboutSection />
+
+        {/* Tricolor divider between About & Structure */}
+        <div className="tricolor-divider" />
+
         <StructureSection />
       </div>
 

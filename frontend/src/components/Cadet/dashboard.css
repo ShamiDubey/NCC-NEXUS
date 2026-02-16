@@ -1,25 +1,30 @@
 /* ================= NCC NEXUS THEME VARIABLES ================= */
 :root {
-  --ncc-main-bg: hsl(0, 0%, 98%);
-  --ncc-card-bg: hsl(0, 0%, 98%);
-  --ncc-text-dark: hsl(225, 25%, 12%);
-  --ncc-text-muted: hsl(225, 15%, 40%);
-  --ncc-primary: hsl(262, 83%, 58%);
-  --ncc-accent: hsl(280, 100%, 70%);
-  --ncc-gradient: linear-gradient(135deg, hsl(262, 83%, 58%), hsl(280, 100%, 70%));
-  --ncc-shadow: 0 4px 20px hsla(262, 83%, 58%, 0.15);
-  --ncc-shadow-card: 0 2px 12px hsla(262, 40%, 40%, 0.12);
-  --ncc-sidebar-dark: hsl(250, 30%, 12%);
-  --ncc-sidebar-text: hsl(40, 15%, 88%);
-  --ncc-sidebar-text-muted: hsl(40, 10%, 70%);
-  --ncc-parade-img: url("/assets/images/ncc-parade.jpg"); /* TODO: Add NCC parade image path */
+  --ncc-main-bg: #f4f6fb;
+  --ncc-card-bg: #ffffff;
+  --ncc-text-dark: #1a1a1a;
+  --ncc-text-muted: #666666;
+  --ncc-primary: #696FC7;
+  --ncc-accent: #8CA9FF;
+  --ncc-gradient: linear-gradient(135deg, #696FC7, #8CA9FF);
+  --ncc-shadow: 0 4px 20px rgba(105, 111, 199, 0.2);
+  --ncc-shadow-card: 0 2px 16px rgba(105, 111, 199, 0.08);
+  --ncc-sidebar-bg: rgba(255, 255, 255, 0.95);
+  --ncc-sidebar-text: #1a1a1a;
+  --ncc-sidebar-text-muted: #666666;
+  --ncc-radius: 16px;
+  --ncc-radius-lg: 24px;
+  --ncc-tricolor-red: #DC143C;
+  --ncc-tricolor-navy: #1B2A6B;
+  --ncc-tricolor-lightblue: #5BC0EB;
+  --ncc-font: "Poppins", "Segoe UI", sans-serif;
 }
 
 /* GLOBAL */
 .cadet-dashboard {
   background-color: var(--ncc-main-bg);
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
+  font-family: var(--ncc-font);
   color: var(--ncc-text-dark);
 }
 
@@ -27,17 +32,12 @@
   display: flex;
 }
 
-/* SIDEBAR - Deep dark purple with NCC parade photo background */
+/* SIDEBAR - Premium white glass with blue accents */
 .cadet-dashboard .sidebar {
   width: 300px;
-  background: linear-gradient(
-    180deg,
-    #7c4dff 0%,
-    #a855f7 45%,
-    #f472b6 100%
-  );
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 28px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
+  border-right: 1px solid rgba(140, 169, 255, 0.18);
+  padding: 0 0 24px 0;
   z-index: 9999;
   position: fixed;
   top: 0;
@@ -46,17 +46,43 @@
   display: flex;
   flex-direction: column;
   transform: translateX(-105%);
-  transition: transform 0.25s ease;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 4px 0 30px rgba(105, 111, 199, 0.08);
+  overflow: hidden;
 }
 
+/* Tricolor accent strip at top of sidebar */
 .cadet-dashboard .sidebar::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.08);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    var(--ncc-tricolor-red) 0%,
+    var(--ncc-tricolor-red) 33.33%,
+    var(--ncc-tricolor-navy) 33.33%,
+    var(--ncc-tricolor-navy) 66.66%,
+    var(--ncc-tricolor-lightblue) 66.66%,
+    var(--ncc-tricolor-lightblue) 100%
+  );
+  z-index: 10;
+}
+
+/* Subtle decorative glow blob */
+.cadet-dashboard .sidebar::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(140, 169, 255, 0.12) 0%, transparent 70%);
   pointer-events: none;
+  z-index: 0;
 }
 
 .cadet-dashboard .sidebar > div,
@@ -75,22 +101,29 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 18px;
-  background: var(--ncc-main-bg);
-  padding: 10px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
+  background: var(--ncc-card-bg);
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(105, 111, 199, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .cadet-dashboard .cadet-sidebar-toggle {
   background: var(--ncc-gradient);
   border: none;
   color: white;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 10px 14px;
   font-size: 16px;
   cursor: pointer;
   font-weight: bold;
   box-shadow: var(--ncc-shadow);
+  transition: all 0.2s ease;
+}
+
+.cadet-dashboard .cadet-sidebar-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(105, 111, 199, 0.3);
 }
 
 @media (max-width: 850px) {
@@ -107,130 +140,179 @@
 .cadet-dashboard .cadet-sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 9998;   /* sidebar se ek level neeche */
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9998;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .cadet-dashboard .top-section {
-  flex: 1;              /* <--- pushes logout to bottom */
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
+/* ─── SIDEBAR HEADER (Logo area) ─── */
 .cadet-dashboard .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   position: relative;
-  padding-bottom: 14px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 24px 24px 20px;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, rgba(105, 111, 199, 0.06) 0%, rgba(140, 169, 255, 0.04) 100%);
+  border-bottom: 1px solid rgba(140, 169, 255, 0.15);
 }
 
 .cadet-dashboard .close-sidebar-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.04);
   border: none;
-  color: var(--ncc-sidebar-text);
-  font-size: 24px;
+  color: var(--ncc-text-muted);
+  font-size: 22px;
   cursor: pointer;
   padding: 5px;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .cadet-dashboard .close-sidebar-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
 }
 
 .cadet-dashboard .logo-box {
   width: 50px;
   height: 50px;
-  background: #a6c34e;
+  background: rgba(105, 111, 199, 0.1);
   border-radius: 12px;
+  border: 1px solid rgba(140, 169, 255, 0.2);
 }
 
 .cadet-dashboard .logo-text h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   white-space: nowrap;
-  color: rgba(245, 245, 245, 0.95);
+  color: var(--ncc-text-dark);
+  letter-spacing: 0.03em;
 }
 
 .cadet-dashboard .logo-text p {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(230, 220, 245, 0.85);
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ncc-primary);
+  opacity: 0.8;
 }
 
+/* ─── NAVIGATION LIST ─── */
 .cadet-dashboard .nav-list {
-  margin-top: 22px;
-  padding-top: 6px;
+  margin-top: 0;
+  padding: 16px 16px 0;
 }
 
 .cadet-dashboard .nav-item {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
+  gap: 14px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  border-radius: 12px;
   border: none;
-  background: none;
-  color: rgba(235, 225, 250, 0.92);
+  background: transparent;
+  color: var(--ncc-text-muted);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14.5px;
   cursor: pointer;
   pointer-events: auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer on hover */
+.cadet-dashboard .nav-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: var(--ncc-gradient);
+  transition: width 0.25s ease;
 }
 
 .cadet-dashboard .nav-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.95);
+  background: rgba(105, 111, 199, 0.06);
+  color: var(--ncc-primary);
+  padding-left: 18px;
+}
+
+.cadet-dashboard .nav-item:hover::before {
+  width: 3px;
 }
 
 .cadet-dashboard .nav-item.active {
   background: var(--ncc-gradient);
   color: white;
-  font-weight: bold;
-  box-shadow: var(--ncc-shadow);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(105, 111, 199, 0.25);
+  padding-left: 14px;
 }
 
+.cadet-dashboard .nav-item.active::before {
+  width: 0;
+}
+
+/* Icon wrapper feel for nav items */
+.cadet-dashboard .nav-item svg,
+.cadet-dashboard .nav-item > :first-child {
+  flex-shrink: 0;
+}
+
+/* ─── LOGOUT BUTTON ─── */
 .cadet-dashboard .logout-item {
   background: none;
   border: none;
-  color: rgba(235, 225, 250, 0.92);
+  color: var(--ncc-text-muted);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  margin: auto 16px 0;
+  padding: 14px 14px;
+  border-top: 1px solid rgba(140, 169, 255, 0.12);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14.5px;
+  border-radius: 12px;
+  transition: all 0.25s ease;
 }
 
 .cadet-dashboard .logout-item:hover {
-  color: rgba(255, 255, 255, 0.95);
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
 }
 
 .cadet-dashboard .main {
   margin-left: 0;
-  padding: 30px;
+  padding: 24px 28px 40px;
   min-height: 100vh;
   overflow-y: auto;
   background: var(--ncc-main-bg);
-
   width: 100vw;
   transition: margin-left 0.25s ease;
 }
@@ -240,50 +322,246 @@
   width: calc(100vw - 300px);
 }
 
-/* BANNER - 135° gradient purple → pink-purple */
+/* ─── WELCOME HEADER ─── */
+.cadet-dashboard .welcome-header {
+  background: var(--ncc-card-bg);
+  border-radius: var(--ncc-radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(105, 111, 199, 0.1);
+  box-shadow: var(--ncc-shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  animation: cdFadeUp 0.5s ease backwards;
+  overflow: hidden;
+  position: relative;
+}
+
+.cadet-dashboard .welcome-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--ncc-tricolor-red) 0%,
+    var(--ncc-tricolor-red) 33%,
+    var(--ncc-tricolor-navy) 33%,
+    var(--ncc-tricolor-navy) 66%,
+    var(--ncc-tricolor-lightblue) 66%,
+    var(--ncc-tricolor-lightblue) 100%
+  );
+}
+
+.cadet-dashboard .welcome-left h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ncc-text-dark);
+  margin: 0 0 4px;
+}
+
+.cadet-dashboard .welcome-left p {
+  font-size: 0.85rem;
+  color: var(--ncc-text-muted);
+  margin: 0;
+}
+
+.cadet-dashboard .welcome-motto {
+  font-family: "Marcellus", serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--ncc-primary);
+  text-transform: uppercase;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+/* ─── QUICK STATS ROW ─── */
+.cadet-dashboard .quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  animation: cdFadeUp 0.5s 0.1s ease backwards;
+}
+
+.cadet-dashboard .stat-card {
+  background: var(--ncc-card-bg);
+  border-radius: var(--ncc-radius);
+  padding: 20px;
+  border: 1px solid rgba(105, 111, 199, 0.08);
+  box-shadow: var(--ncc-shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.25s ease;
+}
+
+.cadet-dashboard .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(105, 111, 199, 0.14);
+}
+
+.cadet-dashboard .stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.cadet-dashboard .stat-icon.red {
+  background: rgba(220, 20, 60, 0.12);
+  color: var(--ncc-tricolor-red);
+}
+
+.cadet-dashboard .stat-icon.navy {
+  background: rgba(27, 42, 107, 0.12);
+  color: var(--ncc-tricolor-navy);
+}
+
+.cadet-dashboard .stat-icon.lightblue {
+  background: rgba(91, 192, 235, 0.12);
+  color: var(--ncc-tricolor-lightblue);
+}
+
+.cadet-dashboard .stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cadet-dashboard .stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ncc-text-dark);
+  line-height: 1.2;
+}
+
+.cadet-dashboard .stat-label {
+  font-size: 0.75rem;
+  color: var(--ncc-text-muted);
+  letter-spacing: 0.03em;
+}
+
+/* BANNER - NCC Tricolor gradient with reduced opacity */
 .cadet-dashboard .banner {
-  height: 200px;
-  background: var(--ncc-gradient);
-  border-radius: 25px;
+  height: 220px;
+  background: linear-gradient(135deg,
+    rgba(220, 20, 60, 0.55) 0%,
+    rgba(27, 42, 107, 0.6) 50%,
+    rgba(91, 192, 235, 0.5) 100%
+  );
+  border-radius: var(--ncc-radius-lg);
   position: relative;
   box-shadow: var(--ncc-shadow);
+  overflow: visible;
+  animation: cdFadeUp 0.5s 0.15s ease backwards;
+}
+
+/* Subtle diagonal pattern overlay */
+.cadet-dashboard .banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(255, 255, 255, 0.06) 20px,
+      rgba(255, 255, 255, 0.06) 40px
+    );
+  z-index: 1;
+}
+
+/* NCC Motto watermark on banner */
+.cadet-dashboard .banner-motto {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Marcellus", serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  z-index: 2;
+  white-space: nowrap;
 }
 
 .cadet-dashboard .profile-photo-wrapper {
   position: absolute;
   bottom: -55px;
   left: 40px;
+  z-index: 5;
 }
 
 .cadet-dashboard .profile-photo {
-  width: 120px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-  border: 5px solid var(--ncc-main-bg);
+  border: 5px solid var(--ncc-card-bg);
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.cadet-dashboard .profile-photo:hover {
+  transform: scale(1.03);
 }
 
 .cadet-dashboard .camera-icon {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 8px;
+  right: 8px;
   background: var(--ncc-primary);
-  border: none;
-  padding: 6px;
+  border: 3px solid var(--ncc-card-bg);
+  padding: 7px;
   border-radius: 50%;
   color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cadet-dashboard .camera-icon:hover {
+  background: #5a5fb3;
+  transform: scale(1.1);
 }
 
 /* PROFILE */
+.cadet-dashboard .profile-card {
+  background: var(--ncc-card-bg);
+  border-radius: var(--ncc-radius-lg);
+  padding: 0;
+  margin-top: -30px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(105, 111, 199, 0.08);
+  box-shadow: var(--ncc-shadow-card);
+  position: relative;
+  z-index: 1;
+  animation: cdFadeUp 0.5s 0.25s ease backwards;
+}
+
 .cadet-dashboard .profile-details {
-  margin-top: 70px;
-  margin-left: 40px;
+  padding: 60px 32px 28px;
 }
 
 .cadet-dashboard .profile-name {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 2px;
   color: var(--ncc-text-dark);
+  letter-spacing: -0.01em;
 }
 
 .cadet-dashboard .role-badge {
@@ -296,25 +574,39 @@
 
 .cadet-dashboard .profile-info {
   display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .cadet-dashboard .info-pill {
-  background: hsl(0, 0%, 95%);
-  padding: 8px 14px;
-  border-radius: 10px;
+  background: var(--ncc-main-bg);
+  padding: 10px 16px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--ncc-text-dark);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: var(--ncc-shadow-card);
+  border: 1px solid rgba(105, 111, 199, 0.1);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cadet-dashboard .info-pill:hover {
+  border-color: rgba(105, 111, 199, 0.25);
+  box-shadow: 0 2px 8px rgba(105, 111, 199, 0.1);
+}
+
+.cadet-dashboard .info-pill svg {
+  color: var(--ncc-primary);
+  flex-shrink: 0;
 }
 
 .cadet-dashboard .bio-container {
-  margin-top: 12px;
-  width: 65%;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 600px;
 }
 
 .cadet-dashboard .bio-display {
@@ -325,29 +617,33 @@
 
 .cadet-dashboard .bio {
   flex: 1;
-  border-left: 4px solid var(--ncc-primary);
-  padding-left: 10px;
+  border-left: 4px solid;
+  border-image: linear-gradient(180deg, var(--ncc-tricolor-red), var(--ncc-tricolor-lightblue)) 1;
+  padding-left: 14px;
   color: var(--ncc-text-muted);
   font-style: italic;
   margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .cadet-dashboard .bio-edit-icon {
-  background: transparent;
+  background: rgba(105, 111, 199, 0.08);
   border: none;
   color: var(--ncc-primary);
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background 0.2s;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   margin-top: 2px;
 }
 
 .cadet-dashboard .bio-edit-icon:hover {
-  background: hsla(262, 83%, 58%, 0.1);
+  background: rgba(105, 111, 199, 0.15);
+  transform: scale(1.05);
 }
 
 .cadet-dashboard .bio-edit-mode {
@@ -360,20 +656,21 @@
   width: 100%;
   min-height: 80px;
   background: var(--ncc-main-bg);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(105, 111, 199, 0.15);
   border-left: 4px solid var(--ncc-primary);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
   color: var(--ncc-text-dark);
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
+  transition: all 0.2s ease;
 }
 
 .cadet-dashboard .bio-edit-textarea:focus {
   outline: none;
   border-color: var(--ncc-primary);
-  box-shadow: 0 0 0 2px hsla(262, 83%, 58%, 0.2);
+  box-shadow: 0 0 0 3px rgba(105, 111, 199, 0.12);
 }
 
 .cadet-dashboard .bio-edit-actions {
@@ -385,53 +682,58 @@
   background: var(--ncc-gradient);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(105, 111, 199, 0.25);
 }
 
 .cadet-dashboard .bio-save-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(105, 111, 199, 0.3);
 }
 
 .cadet-dashboard .bio-cancel-btn {
-  background: hsl(0, 0%, 90%);
+  background: var(--ncc-main-bg);
   color: var(--ncc-text-muted);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
 .cadet-dashboard .bio-cancel-btn:hover {
-  background: hsl(0, 0%, 85%);
+  background: #e8e8e8;
 }
 
 /* SECTION TITLE */
 .cadet-dashboard .section-title {
-  margin-top: 40px;
-  font-size: 22px;
-  font-weight: bold;
-  border-bottom: 2px solid var(--ncc-primary);
-  width: fit-content;
-  padding-bottom: 4px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--ncc-text-dark);
 }
 
 /* CREATE POST */
 .cadet-dashboard .create-post {
   background: var(--ncc-card-bg);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  padding: 20px;
-  margin-top: 20px;
+  border: 1px solid rgba(105, 111, 199, 0.08);
+  border-radius: var(--ncc-radius-lg);
+  padding: 22px;
+  margin-top: 16px;
   box-shadow: var(--ncc-shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.cadet-dashboard .create-post:hover {
+  box-shadow: 0 4px 20px rgba(105, 111, 199, 0.12);
 }
 
 .cadet-dashboard .create-row {
@@ -493,7 +795,7 @@
   .cadet-dashboard .sidebar {
     display: flex;
     transform: translateX(-105%);
-    transition: transform 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .cadet-dashboard .sidebar.open {
@@ -504,9 +806,10 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
     border: none;
-    z-index: 9998; /* below sidebar */
+    z-index: 9998;
   }
 
   .cadet-dashboard .sidebar {
@@ -540,12 +843,14 @@
   }
 }
 .cadet-dashboard .sidebar-logo {
-  width: 96px;
-  height: 96px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
-  border-radius: 8px;
-  padding: 0;
-  background: transparent;
+  border-radius: 14px;
+  padding: 6px;
+  background: white;
+  border: 1px solid rgba(140, 169, 255, 0.2);
+  box-shadow: 0 2px 12px rgba(105, 111, 199, 0.12);
 }
 .cadet-dashboard .profile-top-row {
   display: flex;
@@ -728,4 +1033,94 @@
   }
 }
 
+/* ─── DASHBOARD ANIMATIONS ─── */
+@keyframes cdFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cdSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ─── PROFILE LOADING SHIMMER ─── */
+.cadet-dashboard .loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--ncc-radius);
+  height: 200px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── RESPONSIVE ADJUSTMENTS FOR NEW ELEMENTS ─── */
+@media (max-width: 768px) {
+  .cadet-dashboard .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 8px;
+  }
+
+  .cadet-dashboard .welcome-motto {
+    display: none;
+  }
+
+  .cadet-dashboard .quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cadet-dashboard .profile-details {
+    padding: 50px 20px 24px;
+  }
+
+  .cadet-dashboard .profile-name {
+    font-size: 1.4rem;
+  }
+
+  .cadet-dashboard .bio-container {
+    max-width: 100%;
+  }
+
+  .cadet-dashboard .banner-motto {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cadet-dashboard .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .cadet-dashboard .main {
+    padding: 16px 14px 30px;
+  }
+
+  .cadet-dashboard .profile-photo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .cadet-dashboard .profile-photo-wrapper {
+    left: 20px;
+    bottom: -45px;
+  }
+}
 

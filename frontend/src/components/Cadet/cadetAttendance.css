@@ -1,0 +1,646 @@
+/* ═══════════════════════════════════════════════════════════════
+   CADET ATTENDANCE & LEAVE MANAGEMENT — NCC NEXUS THEME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── ROOT ── */
+.ca-root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+/* ── HEADER ── */
+.ca-header {
+  margin-bottom: 28px;
+}
+
+.ca-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--ncc-text-dark);
+  margin: 0 0 4px;
+  position: relative;
+  display: inline-block;
+}
+
+.ca-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 3px;
+  margin-top: 6px;
+  background: linear-gradient(90deg,
+    #DC143C 0%, #DC143C 33%,
+    #1B2A6B 33%, #1B2A6B 66%,
+    #5BC0EB 66%, #5BC0EB 100%
+  );
+  border-radius: 2px;
+}
+
+.ca-subtitle {
+  margin: 4px 0 0;
+  color: var(--ncc-text-muted);
+  font-size: 14px;
+}
+
+/* ── STATS GRID ── */
+.ca-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.ca-stat-card {
+  background: var(--ncc-card-bg);
+  border-radius: var(--ncc-radius, 16px);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(105, 111, 199, 0.08);
+  box-shadow: var(--ncc-shadow-card);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ca-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(105, 111, 199, 0.14);
+}
+
+.ca-stat-number {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.ca-stat-label {
+  font-size: 13px;
+  color: var(--ncc-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ca-stat-total .ca-stat-number {
+  color: var(--ncc-primary);
+}
+.ca-stat-present .ca-stat-number {
+  color: hsl(155, 60%, 38%);
+}
+.ca-stat-absent .ca-stat-number {
+  color: hsl(0, 70%, 50%);
+}
+.ca-stat-percent .ca-stat-number {
+  background: var(--ncc-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── SECTION CARD ── */
+.ca-section-card {
+  background: var(--ncc-card-bg);
+  border: 1px solid rgba(105, 111, 199, 0.08);
+  border-radius: var(--ncc-radius-lg, 24px);
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--ncc-shadow-card);
+}
+
+.ca-section-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ncc-text-dark);
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  position: relative;
+  display: inline-block;
+}
+
+.ca-section-heading::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 45px;
+  height: 3px;
+  background: linear-gradient(90deg,
+    #DC143C 0%, #DC143C 33%,
+    #1B2A6B 33%, #1B2A6B 66%,
+    #5BC0EB 66%, #5BC0EB 100%
+  );
+  border-radius: 2px;
+}
+
+/* ── SESSION LIST ── */
+.ca-sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ca-session-block {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.ca-session-block:hover {
+  box-shadow: 0 2px 12px hsla(233, 40%, 50%, 0.1);
+}
+
+.ca-session-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, hsla(233, 40%, 60%, 0.06), hsla(220, 100%, 80%, 0.04));
+  border: none;
+  cursor: pointer;
+  color: var(--ncc-text-dark);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.ca-session-header:hover {
+  background: linear-gradient(135deg, hsla(233, 40%, 60%, 0.1), hsla(220, 100%, 80%, 0.07));
+}
+
+.ca-session-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ca-session-name {
+  font-weight: 700;
+}
+
+.ca-session-badge {
+  background: var(--ncc-gradient);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── ATTENDANCE TABLE ── */
+.ca-session-table-wrap {
+  overflow-x: auto;
+  padding: 16px 20px 20px;
+}
+
+.ca-att-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 400px;
+}
+
+.ca-drill-header-row {
+  background: linear-gradient(135deg, hsla(233, 40%, 60%, 0.08), hsla(220, 100%, 80%, 0.05));
+}
+
+.ca-drill-th {
+  padding: 12px 14px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 130px;
+}
+
+.ca-drill-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ncc-primary);
+  margin-bottom: 4px;
+}
+
+.ca-drill-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ncc-text-muted);
+  margin-top: 2px;
+}
+
+.ca-att-cell {
+  text-align: center;
+  padding: 14px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ca-att-present {
+  background: hsl(155, 55%, 92%);
+  color: hsl(155, 60%, 30%);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ca-att-absent {
+  background: hsl(0, 80%, 93%);
+  color: hsl(0, 70%, 40%);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ca-att-upcoming {
+  color: var(--ncc-text-muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* ── LEAVE FORM ── */
+.ca-leave-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ca-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ca-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ca-form-full {
+  width: 100%;
+}
+
+.ca-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ncc-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ca-form-select {
+  padding: 11px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--ncc-text-dark);
+  background: hsl(0, 0%, 97%);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.ca-form-select:focus {
+  outline: none;
+  border-color: var(--ncc-primary);
+  box-shadow: 0 0 0 3px hsla(233, 40%, 60%, 0.15);
+}
+
+.ca-form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ca-form-readonly {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: hsl(0, 0%, 95%);
+  color: var(--ncc-text-muted);
+  font-size: 14px;
+}
+
+.ca-form-textarea {
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ncc-text-dark);
+  background: hsl(0, 0%, 97%);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ca-form-textarea:focus {
+  outline: none;
+  border-color: var(--ncc-primary);
+  box-shadow: 0 0 0 3px hsla(233, 40%, 60%, 0.15);
+}
+
+.ca-form-textarea::placeholder {
+  color: hsl(225, 10%, 60%);
+}
+
+/* ── FILE UPLOAD ── */
+.ca-file-area {
+  display: flex;
+  align-items: center;
+}
+
+.ca-file-upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  background: hsl(0, 0%, 97%);
+  cursor: pointer;
+  color: var(--ncc-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  justify-content: center;
+}
+
+.ca-file-upload-btn:hover {
+  border-color: var(--ncc-primary);
+  background: hsla(233, 40%, 60%, 0.04);
+  color: var(--ncc-primary);
+}
+
+.ca-file-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: hsl(225, 10%, 60%);
+}
+
+.ca-file-chosen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: hsla(233, 40%, 60%, 0.08);
+  border-radius: 10px;
+  color: var(--ncc-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ca-file-name {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ca-file-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: hsl(0, 70%, 50%);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.ca-file-remove:hover {
+  background: hsl(0, 80%, 93%);
+}
+
+/* ── SUBMIT BUTTON ── */
+.ca-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--ncc-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--ncc-shadow);
+  transition: opacity 0.2s, transform 0.15s;
+  align-self: flex-start;
+}
+
+.ca-submit-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.ca-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ── LEAVE APPLICATION LIST ── */
+.ca-empty-msg {
+  color: var(--ncc-text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.ca-leave-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ca-leave-card {
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.ca-leave-card:hover {
+  box-shadow: 0 4px 16px hsla(233, 40%, 50%, 0.1);
+}
+
+.ca-leave-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: hsl(0, 0%, 97%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ca-leave-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ncc-text-dark);
+}
+
+.ca-leave-drill {
+  font-weight: 700;
+}
+
+.ca-leave-sep {
+  color: rgba(0, 0, 0, 0.2);
+}
+
+.ca-leave-session-name {
+  color: var(--ncc-text-muted);
+  font-size: 13px;
+}
+
+/* ── STATUS BADGES ── */
+.ca-leave-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ca-status-pending {
+  background: hsl(40, 95%, 92%);
+  color: hsl(35, 90%, 38%);
+}
+
+.ca-status-approved {
+  background: hsl(155, 55%, 90%);
+  color: hsl(155, 60%, 30%);
+}
+
+.ca-status-rejected {
+  background: hsl(0, 80%, 93%);
+  color: hsl(0, 70%, 40%);
+}
+
+/* ── LEAVE CARD BODY ── */
+.ca-leave-card-body {
+  padding: 16px 20px;
+}
+
+.ca-leave-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ncc-text-muted);
+  margin-bottom: 8px;
+}
+
+.ca-leave-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ncc-text-dark);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.ca-leave-reason svg {
+  margin-top: 3px;
+  flex-shrink: 0;
+  color: var(--ncc-text-muted);
+}
+
+.ca-leave-doc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ncc-primary);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.ca-leave-card-footer {
+  padding: 10px 20px;
+  font-size: 12px;
+  color: var(--ncc-text-muted);
+  background: hsl(0, 0%, 98%);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .ca-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ca-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ca-section-card {
+    padding: 20px 16px;
+  }
+
+  .ca-session-header {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .ca-session-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .ca-leave-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ca-submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ca-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .ca-stat-card {
+    padding: 14px 10px;
+  }
+
+  .ca-stat-number {
+    font-size: 22px;
+  }
+
+  .ca-title {
+    font-size: 24px;
+  }
+
+  .ca-drill-th {
+    min-width: 110px;
+    padding: 10px 8px;
+  }
+}

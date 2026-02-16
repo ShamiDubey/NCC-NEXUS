@@ -1,61 +1,60 @@
-/* src/components/Alumni/alumniChat.css */
+/* src/components/Alumni/alumniChat.css — NCC Tricolor Light Theme */
 
 .alumni-chat-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;       /* Fills the dashboard content area */
+  height: 100%;
   width: 100%;
-  background-color: #0b141a; /* Matches chat dark theme */
-  overflow: hidden;   /* Prevents dashboard scrollbar from conflicting */
+  background-color: #f4f6fb;
+  overflow: hidden;
 }
 
 /* Page Header */
 .alumni-chat-header {
   height: 65px;
   min-height: 65px;
-  background-color: #202c33;
-  border-bottom: 1px solid #2f3b43;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e6eef8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  color: #e9edef;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .header-left h1 {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
-  color: #e9edef;
+  color: #0f172a;
 }
 
 .header-left .subtitle {
   font-size: 0.8rem;
-  color: #8696a0;
+  color: #64748b;
   display: block;
 }
 
 .status-badge {
   font-size: 0.8rem;
-  background-color: rgba(255, 215, 0, 0.1); /* Gold tint for Alumni */
-  color: #ffd700;
+  background: rgba(27, 42, 107, 0.08);
+  color: #1B2A6B;
   padding: 4px 12px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(27, 42, 107, 0.15);
+  font-weight: 600;
 }
 
 /* Chat Container Override */
 .alumni-chat-container {
-  flex: 1; /* Takes remaining height */
+  flex: 1;
   position: relative;
   overflow: hidden;
 }
 
-/* * CRITICAL: Override ChatCommon's default 100vh 
- * to fit inside this specific container.
- */
+/* Override ChatCommon's default 100vh */
 .alumni-chat-container .ncc-chat-container {
-  height: 100% !important; 
+  height: 100% !important;
   width: 100%;
 }

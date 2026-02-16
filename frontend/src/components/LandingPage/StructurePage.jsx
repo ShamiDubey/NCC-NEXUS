@@ -45,10 +45,28 @@ const StructurePage = () => {
         </section>
       </main>
 
-      {/* ✅ FULL-WIDTH FOOTER */}
+      {/* Enhanced NCC Footer */}
       <footer className="site-footer">
-        <p>© 2024 NCC Nexus - National Cadet Corps Digital Command Center</p>
-        <span>Unity and Discipline</span>
+        <div className="footer-tricolor-bar" />
+        <div className="footer-content">
+          <p className="footer-motto">Unity and Discipline</p>
+          <p className="footer-motto-hindi">Ekta Aur Anushasan</p>
+          <div className="footer-wings">
+            <span className="footer-wing army">
+              <span className="footer-wing-dot" /> Army Wing
+            </span>
+            <span className="footer-wing navy">
+              <span className="footer-wing-dot" /> Naval Wing
+            </span>
+            <span className="footer-wing air">
+              <span className="footer-wing-dot" /> Air Wing
+            </span>
+          </div>
+          <div className="footer-divider" />
+          <p className="footer-copyright">
+            &copy; {new Date().getFullYear()} NCC Nexus &mdash; National Cadet Corps Digital Command Center
+          </p>
+        </div>
       </footer>
     </div>
   );

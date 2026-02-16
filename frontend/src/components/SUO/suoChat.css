@@ -1,58 +1,60 @@
-/* src/components/SUO/suoChat.css */
+/* src/components/SUO/suoChat.css — NCC Tricolor Light Theme */
 
 .suo-chat-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: #0b141a;
+  background-color: #f4f6fb;
   overflow: hidden;
 }
 
 /* SUO Specific Header */
 .suo-chat-header {
-  height: 70px; /* Slightly taller for admin feel */
+  height: 70px;
   min-height: 70px;
-  background-color: #1f2c34;
-  border-bottom: 1px solid #2f3b43;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e6eef8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  color: #e9edef;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 5; /* Ensure header stays above content */
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 5;
 }
 
 .header-title h1 {
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0;
-  color: #e9edef;
+  color: #0f172a;
 }
 
 .header-title .subtitle {
   font-size: 0.8rem;
-  color: #8696a0;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 /* Action Button */
 .broadcast-btn {
-  background-color: #00a884;
+  background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
   color: #fff;
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(27, 42, 107, 0.15);
 }
 
 .broadcast-btn:hover {
-  background-color: #008f6f;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(27, 42, 107, 0.22);
 }
 
 /* Chat Container Override */
@@ -62,9 +64,7 @@
   overflow: hidden;
 }
 
-/* * CRITICAL: Override ChatCommon's default 100vh 
- * to fit inside this specific container 
- */
+/* Override ChatCommon's default 100vh */
 .suo-chat-container .ncc-chat-container {
   height: 100% !important;
   width: 100%;

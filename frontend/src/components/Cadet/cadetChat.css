@@ -1,53 +1,54 @@
-/* src/components/Cadet/cadetChat.css */
+/* src/components/Cadet/cadetChat.css — NCC Tricolor Light Theme */
 
 .cadet-chat-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;       /* Fills the dashboard content area */
+  height: 100%;
   width: 100%;
-  background-color: #0b141a; /* Matches chat dark theme */
-  overflow: hidden;   /* Prevents dashboard scrollbar from conflicting */
+  background-color: #f4f6fb;
+  overflow: hidden;
 }
 
 /* Page Header */
 .cadet-chat-header {
   height: 60px;
   min-height: 60px;
-  background-color: #202c33; /* Dark header */
-  border-bottom: 1px solid #2f3b43;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e6eef8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  color: #e9edef;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .cadet-chat-header h1 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   letter-spacing: 0.5px;
+  color: #0f172a;
 }
 
 .online-status {
   font-size: 0.85rem;
-  color: #00a884; /* WhatsApp/NCC Green */
-  background: rgba(0, 168, 132, 0.1);
+  color: #1B2A6B;
+  background: rgba(27, 42, 107, 0.08);
   padding: 4px 12px;
   border-radius: 20px;
+  font-weight: 600;
 }
 
 /* Chat Container Override */
 .cadet-chat-container {
-  flex: 1; /* Takes remaining height */
+  flex: 1;
   position: relative;
   overflow: hidden;
 }
 
-/* * CRITICAL: Override ChatCommon's default 100vh 
- * to fit inside this specific container 
- */
+/* Override ChatCommon's default 100vh */
 .cadet-chat-container .ncc-chat-container {
-  height: 100% !important; 
+  height: 100% !important;
   width: 100%;
 }

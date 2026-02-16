@@ -1,12 +1,13 @@
-import { useState } from "react";
 import logoImage from "../assets/ncc-logo.png";
 
-// ✅ Accept props from Home.jsx to trigger modals
 const LandingPage = ({ onCadetLogin, onAnoLogin }) => {
-  return (
-    // ✅ Added ID="home" for scrolling
-    <div className="page" id="home">
+  const scrollToAbout = () => {
+    const el = document.getElementById("about");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
 
+  return (
+    <div className="page" id="home">
       <main className="hero">
         <section className="hero-content">
           <span className="hero-pill">Official Digital Command Center</span>
@@ -21,7 +22,6 @@ const LandingPage = ({ onCadetLogin, onAnoLogin }) => {
           </p>
 
           <div className="hero-actions">
-            {/* ✅ Calls function passed from Home.jsx */}
             <button
               className="primary"
               type="button"
@@ -29,8 +29,6 @@ const LandingPage = ({ onCadetLogin, onAnoLogin }) => {
             >
               Cadet Login
             </button>
-
-            {/* ✅ Calls function passed from Home.jsx */}
             <button
               className="secondary"
               type="button"
@@ -38,6 +36,31 @@ const LandingPage = ({ onCadetLogin, onAnoLogin }) => {
             >
               ANO Login
             </button>
+          </div>
+
+          {/* NCC Stats Highlights */}
+          <div className="ncc-stats">
+            <div className="ncc-stat">
+              <div className="ncc-stat-icon red">&#9733;</div>
+              <div className="ncc-stat-text">
+                <span className="ncc-stat-value">Est. 1948</span>
+                <span className="ncc-stat-label">Founded</span>
+              </div>
+            </div>
+            <div className="ncc-stat">
+              <div className="ncc-stat-icon navy">&#9873;</div>
+              <div className="ncc-stat-text">
+                <span className="ncc-stat-value">14 Lakh+</span>
+                <span className="ncc-stat-label">Active Cadets</span>
+              </div>
+            </div>
+            <div className="ncc-stat">
+              <div className="ncc-stat-icon lightblue">&#9878;</div>
+              <div className="ncc-stat-text">
+                <span className="ncc-stat-value">3 Wings</span>
+                <span className="ncc-stat-label">Army &middot; Navy &middot; Air</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -49,6 +72,12 @@ const LandingPage = ({ onCadetLogin, onAnoLogin }) => {
           </div>
         </section>
       </main>
+
+      {/* Scroll down indicator */}
+      <div className="scroll-indicator" onClick={scrollToAbout}>
+        <span>Scroll Down</span>
+        <div className="scroll-mouse" />
+      </div>
     </div>
   );
 };

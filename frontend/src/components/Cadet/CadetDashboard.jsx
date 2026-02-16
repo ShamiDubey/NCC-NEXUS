@@ -7,6 +7,11 @@ import {
   Camera,
   Edit2,
   KeyRound,
+  ClipboardList,
+  Shield,
+  Award,
+  CalendarCheck,
+  Rss,
 } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
@@ -17,6 +22,7 @@ import logoImage from "../assets/ncc-logo.png";
 import Feed from "./Feed";
 import ResetPasswordModal from "./ResetPasswordModal";
 import Chatbot from "./Chatbot";
+import CadetAttendance from "./CadetAttendance";
 import { closeCadetSidebar } from "../../features/ui/uiSlice";
 
 export default function CadetDashboard() {
@@ -183,7 +189,7 @@ export default function CadetDashboard() {
                   setSidebarOpen(false);
                 }}
               >
-                <MapPin size={18} />
+                <Rss size={18} />
                 <span>Feed</span>
               </button>
 
@@ -206,6 +212,17 @@ export default function CadetDashboard() {
               >
                 <MessageSquare size={18} />
                 <span>Chat</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === "attendance" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("attendance");
+                  setSidebarOpen(false);
+                }}
+              >
+                <ClipboardList size={18} />
+                <span>Attendance</span>
               </button>
 
               <button className="nav-item" onClick={() => setSidebarOpen(false)}>
@@ -270,6 +287,8 @@ export default function CadetDashboard() {
 
           {activeTab === "chatbot" && <Chatbot />}
 
+          {activeTab === "attendance" && <CadetAttendance />}
+
           {activeTab === "feed" && (
             <Feed
               profileImage={profileImage}
@@ -281,81 +300,138 @@ export default function CadetDashboard() {
           {activeTab === "profile" && (
             <>
               {loadingProfile ? (
-                <p className="section-title">Loading profile...</p>
-              ) : null}
-              <div className="banner">
-                <div className="profile-photo-wrapper">
-                  <img src={profileImage} className="profile-photo" alt="Cadet profile" />
-                  <button
-                    className="camera-icon"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    <Camera size={16} />
-                  </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    hidden
-                    onChange={handleProfileImageChange}
-                  />
-                </div>
-              </div>
-
-              <div className="profile-details">
-                <h1 className="profile-name">{profileData.name}</h1>
-
-                <div className="profile-info">
-                  <div className="info-pill">
-                    <User size={16} />
-                    {profileData.rank}
+                <div className="loading-shimmer" />
+              ) : (
+                <>
+                  {/* Welcome Header */}
+                  <div className="welcome-header">
+                    <div className="welcome-left">
+                      <h2>Welcome back, {profileData.name.split(" ")[0]}!</h2>
+                      <p>Here's your dashboard overview</p>
+                    </div>
+                    <span className="welcome-motto">Unity &amp; Discipline</span>
                   </div>
-                  <div className="info-pill">
-                    <MapPin size={16} />
-                    {profileData.location}
-                  </div>
-                </div>
 
-                <div className="bio-container">
-                  {isEditingBio ? (
-                    <div className="bio-edit-mode">
-                      <textarea
-                        className="bio-edit-textarea"
-                        value={tempBio}
-                        onChange={(e) => setTempBio(e.target.value)}
-                      />
-                      <div className="bio-edit-actions">
-                        <button className="bio-save-btn" onClick={saveBio}>
-                          Save
-                        </button>
-                        <button
-                          className="bio-cancel-btn"
-                          onClick={cancelEditBio}
-                        >
-                          Cancel
-                        </button>
+                  {/* Quick Stats */}
+                  <div className="quick-stats">
+                    <div className="stat-card">
+                      <div className="stat-icon red">
+                        <Shield size={20} />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-value">{profileData.rank}</span>
+                        <span className="stat-label">Current Rank</span>
                       </div>
                     </div>
-                  ) : (
-                    <div className="bio-display">
-                      <p className="bio">"{profileData.bio || "Add your bio using edit button."}"</p>
-                      <button
-                        className="bio-edit-icon"
-                        onClick={startEditBio}
-                      >
-                        <Edit2 size={16} />
-                      </button>
+                    <div className="stat-card">
+                      <div className="stat-icon navy">
+                        <CalendarCheck size={20} />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-value">85%</span>
+                        <span className="stat-label">Attendance</span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                    <div className="stat-card">
+                      <div className="stat-icon lightblue">
+                        <Award size={20} />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-value">B Certificate</span>
+                        <span className="stat-label">NCC Certificate</span>
+                      </div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon red">
+                        <Rss size={20} />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-value">Active</span>
+                        <span className="stat-label">Enrollment</span>
+                      </div>
+                    </div>
+                  </div>
 
-              <h2 className="section-title">Recent Activity</h2>
+                  {/* Profile Banner */}
+                  <div className="banner">
+                    <span className="banner-motto">Unity and Discipline</span>
+                    <div className="profile-photo-wrapper">
+                      <img src={profileImage} className="profile-photo" alt="Cadet profile" />
+                      <button
+                        className="camera-icon"
+                        onClick={() => fileInputRef.current.click()}
+                      >
+                        <Camera size={16} />
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        hidden
+                        onChange={handleProfileImageChange}
+                      />
+                    </div>
+                  </div>
 
-              <Feed
-                profileImage={profileImage}
-                profileName={profileData.name}
-                mode="profile"
-              />
+                  {/* Profile Card */}
+                  <div className="profile-card">
+                    <div className="profile-details">
+                      <h1 className="profile-name">{profileData.name}</h1>
+
+                      <div className="profile-info">
+                        <div className="info-pill">
+                          <User size={16} />
+                          {profileData.rank}
+                        </div>
+                        <div className="info-pill">
+                          <MapPin size={16} />
+                          {profileData.location}
+                        </div>
+                      </div>
+
+                      <div className="bio-container">
+                        {isEditingBio ? (
+                          <div className="bio-edit-mode">
+                            <textarea
+                              className="bio-edit-textarea"
+                              value={tempBio}
+                              onChange={(e) => setTempBio(e.target.value)}
+                            />
+                            <div className="bio-edit-actions">
+                              <button className="bio-save-btn" onClick={saveBio}>
+                                Save
+                              </button>
+                              <button
+                                className="bio-cancel-btn"
+                                onClick={cancelEditBio}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bio-display">
+                            <p className="bio">"{profileData.bio || "Add your bio using edit button."}"</p>
+                            <button
+                              className="bio-edit-icon"
+                              onClick={startEditBio}
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <h2 className="section-title">Recent Activity</h2>
+
+                  <Feed
+                    profileImage={profileImage}
+                    profileName={profileData.name}
+                    mode="profile"
+                  />
+                </>
+              )}
             </>
           )}
         </main>

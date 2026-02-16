@@ -5,34 +5,29 @@
     Reworked for clarity, spacing, and micro-interactions
     ===================================================== */
 
-/* Theme variables (match cadet dashboard) */
+/* Theme variables (match cadet dashboard + NCC tricolor) */
 :root {
-    --ncc-main-bg: #f7fafc;
-    /* very light off-white */
+    --ncc-main-bg: #f4f6fb;
     --ncc-card-bg: #ffffff;
     --ncc-text-dark: #0f172a;
-    /* deep slate */
     --ncc-text-muted: #6b7280;
-    --ncc-primary: #1f6bed;
-    /* bright primary blue (matches screenshot) */
-    --ncc-primary-600: #1453d6;
-    --ncc-accent: #2563eb;
-    --ncc-gradient: linear-gradient(90deg, #1f6bed, #2563eb);
-    --ncc-shadow: 0 8px 28px rgba(31, 107, 237, 0.10);
+    --ncc-primary: #1B2A6B;
+    --ncc-primary-600: #142058;
+    --ncc-accent: #5BC0EB;
+    --ncc-gradient: linear-gradient(135deg, #1B2A6B, #5BC0EB);
+    --ncc-shadow: 0 8px 28px rgba(27, 42, 107, 0.12);
     --ncc-shadow-card: 0 6px 20px rgba(2, 6, 23, 0.06);
     --ncc-sidebar-bg: #ffffff;
-    /* white sidebar like the screenshot */
-    --ncc-sidebar-border: rgba(15, 23, 42, 0.06);
-    --ncc-sidebar-item-hover: #eef6ff;
-    /* pale blue hover */
-    --ncc-sidebar-active-bg: #e6f0ff;
-    /* active item background */
-    --ncc-sidebar-active-accent: #1f6bed;
-    /* active accent bar */
+    --ncc-sidebar-border: rgba(27, 42, 107, 0.08);
+    --ncc-sidebar-item-hover: #eef2ff;
+    --ncc-sidebar-active-bg: #e8eeff;
+    --ncc-sidebar-active-accent: #1B2A6B;
     --ncc-logout-bg: #fff1f3;
-    /* pale pink for logout */
     --ncc-logout-text: #be123c;
-    --ncc-parade-img: url("/assets/images/ncc-parade.jpg");
+    --ncc-tricolor-red: #DC143C;
+    --ncc-tricolor-navy: #1B2A6B;
+    --ncc-tricolor-lightblue: #5BC0EB;
+    --ncc-font: "Poppins", "Segoe UI", system-ui, sans-serif;
 }
 
 /* Logo rotation animation */
@@ -113,26 +108,30 @@
 .ano-topbar {
     display: flex;
     align-items: center;
-    margin-bottom: 18px;
-    background: var(--ncc-main-bg);
-    padding: 10px 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 0;
+    background: var(--ncc-card-bg);
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(27, 42, 107, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .ano-sidebar-toggle {
     background: var(--ncc-gradient);
     border: none;
     color: #ffffff;
-    border-radius: 10px;
-    padding: 10px 12px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 16px;
     cursor: pointer;
     font-weight: bold;
     box-shadow: var(--ncc-shadow);
     display: none;
+    transition: all 0.2s ease;
 }
 
 .ano-sidebar-toggle:hover {
-    transform: translateY(-2px);
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(27, 42, 107, 0.2);
 }
 
 .ano-sidebar-backdrop {
@@ -146,26 +145,47 @@
     left: 0;
     width: 360px;
     height: 100vh;
-    background: var(--ncc-sidebar-bg);
-    border-right:5px solid;
-    border-image: linear-gradient(
-  90deg,
-  rgba(218, 165, 32, 0.35),
-  rgba(255, 223, 120, 0.7),
-  rgba(181, 145, 52, 0.35)
-) 1;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
+    border-right: 1px solid rgba(27, 42, 107, 0.1);
     padding: 0 0 28px 0;
     display: flex;
     flex-direction: column;
     z-index: 9999;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04), -2px 0 6px rgba(218, 165, 32, 0.08), 0 0 12px rgba(255, 215, 0, 0.35);
+    box-shadow: 4px 0 30px rgba(27, 42, 107, 0.06);
+    overflow: hidden;
 }
 
+/* NCC Tricolor accent strip at top of sidebar */
 .ano-dashboard-layout .sidebar::before {
     content: "";
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+        var(--ncc-tricolor-red) 0%,
+        var(--ncc-tricolor-red) 33.33%,
+        var(--ncc-tricolor-navy) 33.33%,
+        var(--ncc-tricolor-navy) 66.66%,
+        var(--ncc-tricolor-lightblue) 66.66%,
+        var(--ncc-tricolor-lightblue) 100%
+    );
+    z-index: 10;
     pointer-events: none;
+}
+
+/* Subtle decorative glow blob */
+.ano-dashboard-layout .sidebar::after {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(91, 192, 235, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .ano-dashboard-layout .sidebar>div,
@@ -181,62 +201,33 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    gap: 30px;
+    gap: 22px;
     position: relative;
-    padding: 30px 45px;
-    margin: 0 0 24px 0;
-    border-radius: 16px 16px 18px 18px;
-    /* premium branded header card with soft glassmorphism */
+    padding: 28px 32px;
+    margin: 12px 0 18px 0;
     background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0.75) 0%,
-            rgba(255, 255, 255, 0.85) 50%,
-            rgba(255, 255, 255, 0.7) 100%),
-        linear-gradient(180deg,
-            rgba(37, 99, 235, 0.04) 0%,
-            rgba(37, 99, 235, 0.02) 100%);
-    backdrop-filter: blur(12px) saturate(108%);
-    border: px solid rgba(36, 81, 180, 0.1);
-    border-bottom: 5px solid;
-    border-image: linear-gradient(90deg,
-            rgba(212, 175, 55, 0.4),
-            /* soft gold */
-            rgba(255, 215, 0, 0.9),
-            /* bright gold */
-            rgba(184, 134, 11, 0.5)
-            /* dark gold */
-        ) 1;
-    /* soft shadow for elevation */
-    box-shadow:
-        0 20px 40px rgba(31, 107, 237, 0.08),
-        0 8px 20px rgba(2, 6, 23, 0.04),
-        inset 0 1px 2px rgba(255, 255, 255, 0.6),
-        0 -2px 6px rgba(192, 192, 192, 0.12),
-        0 0 12px rgba(255, 215, 0, 0.35);
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(240, 244, 255, 0.9) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    will-change: box-shadow, backdrop-filter;
+    border-bottom: 1px solid rgba(27, 42, 107, 0.08);
+    box-shadow: 0 4px 20px rgba(27, 42, 107, 0.04);
 }
 
 .ano-dashboard-layout .sidebar-logo {
-    width: 96px;
-    height: 96px;
+    width: 72px;
+    height: 72px;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 50%;
     flex-shrink: 0;
     background: transparent;
-    padding: 6px;
-    /* soft glowing halo around logo (subtle, premium) */
+    padding: 4px;
     box-shadow:
-        0 0 0 1px rgba(37, 99, 235, 0.08),
-        0 8px 24px rgba(31, 107, 237, 0.15),
-        0 0 32px rgba(37, 99, 235, 0.1) inset,
-        0 0 48px rgba(31, 107, 237, 0.06);
+        0 0 0 2px rgba(27, 42, 107, 0.1),
+        0 4px 16px rgba(27, 42, 107, 0.1);
     transform-origin: 50% 50%;
-    /* smooth oscillation without holds */
     animation: ncc-oscillate 6s linear infinite;
     will-change: transform;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 
 /* text wrapper: ensures proper layout of h3 + span on the right */
@@ -343,7 +334,7 @@
 
 .ano-dashboard-layout .menu-item:hover::before {
     transform: translateY(-50%) scaleY(1);
-    background: var(--ncc-sidebar-active-accent);
+    background: var(--ncc-tricolor-navy);
 }
 
 .ano-dashboard-layout .menu-item:hover::after {
@@ -365,7 +356,7 @@
 
 .ano-dashboard-layout .menu-item.active::before {
     transform: translateY(-50%) scaleY(1);
-    background: var(--ncc-sidebar-active-accent);
+    background: var(--ncc-tricolor-navy);
 }
 
 .ano-dashboard-layout .menu-item:focus {
@@ -479,8 +470,25 @@
 
 .page-header h1 {
     font-size: 26px;
-    font-weight: 700;
+    font-weight: 800;
     color: #0f172a;
+    position: relative;
+    display: inline-block;
+}
+
+.page-header h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 50px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg,
+        var(--ncc-tricolor-red),
+        var(--ncc-tricolor-navy),
+        var(--ncc-tricolor-lightblue)
+    );
 }
 
 .page-header p {
@@ -542,17 +550,16 @@
 
 .form-group input:focus,
 .form-group select:focus {
-    border-color: #2563eb;
-    /* stronger, warmer focus glow */
-    box-shadow: 0 18px 48px rgba(37, 99, 235, 0.16), 0 4px 10px rgba(16, 24, 40, 0.06) inset;
+    border-color: var(--ncc-tricolor-navy);
+    box-shadow: 0 12px 36px rgba(27, 42, 107, 0.12), 0 4px 10px rgba(16, 24, 40, 0.04) inset;
     transform: translateY(-1px);
 }
 
 .form-group input:focus-visible,
 .form-group select:focus-visible {
     outline: none;
-    border-color: #1e40af;
-    box-shadow: 0 20px 58px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(16, 24, 40, 0.06) inset;
+    border-color: var(--ncc-tricolor-navy);
+    box-shadow: 0 14px 40px rgba(27, 42, 107, 0.14), 0 4px 10px rgba(16, 24, 40, 0.04) inset;
 }
 
 /* stronger hover elevation for interactive feel */
@@ -568,15 +575,15 @@
 }
 
 .search-bar input:focus {
-    box-shadow: 0 14px 40px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 14px 40px rgba(27, 42, 107, 0.1);
     outline: none;
 }
 
 /* modal inputs follow the same stronger focus pattern */
 .modal input:focus,
 .modal select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 18px 48px rgba(37, 99, 235, 0.14);
+    border-color: var(--ncc-tricolor-navy);
+    box-shadow: 0 12px 36px rgba(27, 42, 107, 0.12);
     outline: none;
 }
 
@@ -669,13 +676,16 @@ input:-webkit-autofill:focus {
     box-shadow: 0 14px 40px rgba(16, 24, 40, 0.06);
 }
 
-/* watermark / subtle background accents behind content (very low opacity) */
+/* watermark / subtle background accents behind content (NCC tricolor) */
 .ano-dashboard-content::before {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: radial-gradient(circle at 85% 10%, rgba(37, 99, 235, 0.03) 0px, rgba(37, 99, 235, 0.03) 120px, transparent 121px), radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.02) 0px, rgba(59, 130, 246, 0.02) 90px, transparent 91px);
+    background-image:
+        radial-gradient(circle at 85% 10%, rgba(27, 42, 107, 0.03) 0px, rgba(27, 42, 107, 0.03) 120px, transparent 121px),
+        radial-gradient(circle at 15% 85%, rgba(91, 192, 235, 0.03) 0px, rgba(91, 192, 235, 0.03) 90px, transparent 91px),
+        radial-gradient(circle at 50% 50%, rgba(220, 20, 60, 0.015) 0px, transparent 200px);
     opacity: 1;
     z-index: 0;
 }
@@ -771,14 +781,14 @@ input:-webkit-autofill:focus {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    background: var(--ncc-gradient);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 16px;
-    box-shadow: 0 6px 18px rgba(8, 145, 178, 0.12);
+    box-shadow: 0 4px 12px rgba(27, 42, 107, 0.15);
 }
 
 /* Badges */
@@ -797,9 +807,9 @@ input:-webkit-autofill:focus {
 }
 
 .badge.blue {
-    background: rgba(37, 99, 235, 0.08);
-    color: #2563eb;
-    border: 1px solid rgba(37, 99, 235, 0.08);
+    background: rgba(27, 42, 107, 0.08);
+    color: var(--ncc-tricolor-navy);
+    border: 1px solid rgba(27, 42, 107, 0.08);
 }
 
 .badge.gray {
@@ -834,7 +844,7 @@ input:-webkit-autofill:focus {
 }
 
 .icon-btn.edit {
-    color: #2563eb;
+    color: var(--ncc-tricolor-navy);
 }
 
 .icon-btn.delete {
@@ -889,16 +899,19 @@ input:-webkit-autofill:focus {
 }
 
 .modal-actions .primary {
-    background: #2563eb;
+    background: var(--ncc-gradient);
     color: white;
     border: none;
     padding: 10px 16px;
     border-radius: 10px;
     font-weight: 700;
+    box-shadow: 0 4px 12px rgba(27, 42, 107, 0.15);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .modal-actions .primary:hover {
-    background: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(27, 42, 107, 0.2);
 }
 
 .cancel-btn,
@@ -926,6 +939,208 @@ select option {
 /* subtle element transitions */
 * {
     transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+/* =============== FADE-UP ANIMATION =============== */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============== ANO WELCOME HEADER =============== */
+.ano-welcome-header {
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.5s ease both;
+}
+
+.ano-welcome-banner {
+    position: relative;
+    border-radius: 20px;
+    overflow: visible;
+    margin-bottom: 28px;
+    background: linear-gradient(135deg,
+        rgba(220, 20, 60, 0.55) 0%,
+        rgba(27, 42, 107, 0.6) 50%,
+        rgba(91, 192, 235, 0.5) 100%
+    );
+    padding: 36px 32px;
+    box-shadow: 0 8px 30px rgba(27, 42, 107, 0.12);
+}
+
+.ano-welcome-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: url("/assets/images/ncc-parade.jpeg") center/cover no-repeat;
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+.ano-welcome-banner h1 {
+    position: relative;
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ano-welcome-banner p {
+    position: relative;
+    margin: 0;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+.ano-welcome-banner .ncc-motto-small {
+    position: relative;
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* =============== ANO QUICK STATS =============== */
+.ano-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+}
+
+.ano-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--ncc-card-bg);
+    border-radius: 16px;
+    padding: 20px 22px;
+    border: 1px solid rgba(27, 42, 107, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    animation: fadeUp 0.5s ease both;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ano-stat-card:nth-child(1) { animation-delay: 0.1s; }
+.ano-stat-card:nth-child(2) { animation-delay: 0.15s; }
+.ano-stat-card:nth-child(3) { animation-delay: 0.2s; }
+.ano-stat-card:nth-child(4) { animation-delay: 0.25s; }
+
+.ano-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(27, 42, 107, 0.1);
+}
+
+.ano-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.ano-stat-icon.red {
+    background: rgba(220, 20, 60, 0.1);
+    color: var(--ncc-tricolor-red);
+}
+
+.ano-stat-icon.navy {
+    background: rgba(27, 42, 107, 0.1);
+    color: var(--ncc-tricolor-navy);
+}
+
+.ano-stat-icon.lightblue {
+    background: rgba(91, 192, 235, 0.15);
+    color: var(--ncc-tricolor-lightblue);
+}
+
+.ano-stat-icon.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.ano-stat-info h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ncc-text-dark);
+    line-height: 1.1;
+}
+
+.ano-stat-info p {
+    margin: 2px 0 0 0;
+    font-size: 13px;
+    color: var(--ncc-text-muted);
+    font-weight: 500;
+}
+
+/* =============== NCC TRICOLOR DIVIDER =============== */
+.ano-tricolor-divider {
+    height: 3px;
+    border: none;
+    border-radius: 2px;
+    background: linear-gradient(90deg,
+        var(--ncc-tricolor-red) 0%,
+        var(--ncc-tricolor-red) 33.33%,
+        var(--ncc-tricolor-navy) 33.33%,
+        var(--ncc-tricolor-navy) 66.66%,
+        var(--ncc-tricolor-lightblue) 66.66%,
+        var(--ncc-tricolor-lightblue) 100%
+    );
+    margin: 0 0 24px 0;
+    opacity: 0.6;
+}
+
+/* =============== PAGE TITLE ACCENT =============== */
+.page-title {
+    position: relative;
+    display: inline-block;
+}
+
+.page-title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 50px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg,
+        var(--ncc-tricolor-red),
+        var(--ncc-tricolor-navy),
+        var(--ncc-tricolor-lightblue)
+    );
+}
+
+/* =============== ENHANCED CARD ANIMATION =============== */
+.card {
+    animation: fadeUp 0.4s cubic-bezier(.2, .9, .2, 1) both;
+}
+
+/* =============== ENHANCED PRIMARY BUTTON =============== */
+.primary-btn {
+    background: var(--ncc-gradient);
+    box-shadow: 0 4px 16px rgba(27, 42, 107, 0.15);
+}
+
+.primary-btn:hover {
+    box-shadow: 0 8px 28px rgba(27, 42, 107, 0.2);
 }
 
 /* ===================================================== */

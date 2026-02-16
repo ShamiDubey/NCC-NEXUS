@@ -711,7 +711,7 @@ export default function Feed({
                         onClick={() => pinComment(commentPost.id, c.id)}
                         title={c.pinned ? "Unpin comment" : "Pin comment"}
                       >
-                        <Pin size={14} fill={c.pinned ? "#a6c34e" : "none"} />
+                        <Pin size={14} fill={c.pinned ? "#1B2A6B" : "none"} />
                       </span>
                     )}
 

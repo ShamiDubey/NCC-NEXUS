@@ -1,39 +1,28 @@
 
-/* frontend/src/components/ChatCommon/chatCommon.css */
+/* frontend/src/components/ChatCommon/chatCommon.css — NCC Tricolor Light Theme */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;600;700;800&display=swap');
 :root {
-    --chat-bg-main: #0b141a;
-    /* Deepest background */
-    --chat-bg-sidebar: #111b21;
-    /* Sidebar background */
-    --chat-header-bg: #202c33;
-    /* Headers */
-    --chat-input-bg: #2a3942;
-    /* Input fields */
-    --chat-primary: #00a884;
-    /* NCC/WhatsApp Green accent */
-    --chat-text-primary: #e9edef;
-    /* Main text */
-    --chat-text-secondary: #8696a0;
-    /* Subtitles/Time */
-    --chat-msg-sent: #005c4b;
-    /* Sent bubble */
-    --chat-msg-received: #202c33;
-    /* Received bubble */
-    --chat-border: #2f3b43;
-    /* Borders */
-    --chat-hover: #202c33;
-    /* Hover state */
+    --chat-bg-main: #f4f6fb;
+    --chat-bg-sidebar: #ffffff;
+    --chat-header-bg: #ffffff;
+    --chat-input-bg: #f4f6fb;
+    --chat-primary: #1B2A6B;
+    --chat-primary-light: #5BC0EB;
+    --chat-text-primary: #0f172a;
+    --chat-text-secondary: #64748b;
+    --chat-msg-sent: #1B2A6B;
+    --chat-msg-received: #ffffff;
+    --chat-border: #e6eef8;
+    --chat-hover: #f0f4ff;
 }
 
 /* Reset & Layout */
 .ncc-chat-container {
     display: flex;
     height: 100vh;
-    /* Full viewport height */
     width: 100%;
     background-color: var(--chat-bg-main);
-    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', 'Segoe UI', Helvetica, Arial, sans-serif;
     color: var(--chat-text-primary);
     overflow: hidden;
 }
@@ -54,10 +43,7 @@
     width: 70%;
     display: flex;
     flex-direction: column;
-    background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
-    /* Subtle pattern overlay */
-    background-blend-mode: overlay;
-    background-color: #0b141a;
+    background-color: var(--chat-bg-main);
     position: relative;
 }
 
@@ -70,6 +56,7 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--chat-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 /* Search Bar */
@@ -80,12 +67,23 @@
 
 .search-input {
     width: 100%;
-    background-color: var(--chat-header-bg);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
+    background-color: var(--chat-input-bg);
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
+    padding: 10px 14px;
     color: var(--chat-text-primary);
     outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+    border-color: var(--chat-primary);
+    box-shadow: 0 2px 8px rgba(27, 42, 107, 0.08);
+}
+
+.search-input::placeholder {
+    color: #94a3b8;
 }
 
 /* Tabs */
@@ -102,18 +100,25 @@
     background: transparent;
     border: 1px solid var(--chat-border);
     color: var(--chat-text-secondary);
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     cursor: pointer;
     white-space: nowrap;
     font-size: 0.85rem;
+    font-weight: 600;
     transition: all 0.2s;
 }
 
+.chat-tab-btn:hover {
+    background: var(--chat-hover);
+    color: var(--chat-primary);
+}
+
 .chat-tab-btn.active {
-    background-color: var(--chat-primary);
+    background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
     color: white;
-    border-color: var(--chat-primary);
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(27, 42, 107, 0.2);
 }
 
 /* Chat List */
@@ -139,7 +144,7 @@
 .avatar-circle {
     width: 45px;
     height: 45px;
-    background-color: var(--chat-text-secondary);
+    background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -148,6 +153,7 @@
     color: white;
     margin-right: 15px;
     flex-shrink: 0;
+    font-size: 14px;
 }
 
 .chat-info {
@@ -162,8 +168,9 @@
 }
 
 .chat-name {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1rem;
+    color: var(--chat-text-primary);
 }
 
 .chat-time {
@@ -187,8 +194,8 @@
 }
 
 .unread-badge {
-    background-color: var(--chat-primary);
-    color: #111b21;
+    background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
+    color: #ffffff;
     font-size: 0.7rem;
     font-weight: bold;
     min-width: 20px;
@@ -213,25 +220,28 @@
 /* Bubbles */
 .message-bubble {
     max-width: 60%;
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
     position: relative;
     font-size: 0.95rem;
-    line-height: 1.4;
+    line-height: 1.5;
     word-wrap: break-word;
-    box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .message-bubble.sent {
-    background-color: var(--chat-msg-sent);
+    background: linear-gradient(135deg, #1B2A6B, #2a3d8f);
+    color: #ffffff;
     align-self: flex-end;
-    border-top-right-radius: 0;
+    border-bottom-right-radius: 2px;
 }
 
 .message-bubble.received {
     background-color: var(--chat-msg-received);
+    color: var(--chat-text-primary);
     align-self: flex-start;
-    border-top-left-radius: 0;
+    border-bottom-left-radius: 2px;
+    border: 1px solid var(--chat-border);
 }
 
 .msg-meta {
@@ -244,13 +254,18 @@
 
 .msg-time {
     font-size: 0.7rem;
+    color: rgba(100, 116, 139, 0.7);
+}
+
+.message-bubble.sent .msg-time {
     color: rgba(255, 255, 255, 0.6);
 }
 
 /* Input Area */
 .chat-input-area {
-    padding: 10px 16px 12px;
+    padding: 12px 16px 14px;
     background-color: var(--chat-header-bg);
+    border-top: 1px solid var(--chat-border);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -260,15 +275,25 @@
 .message-field {
     flex: 1;
     background-color: var(--chat-input-bg);
-    border: none;
-    border-radius: 10px;
+    border: 1px solid var(--chat-border);
+    border-radius: 12px;
     padding: 12px;
-    color: white;
+    color: var(--chat-text-primary);
     resize: none;
     height: 45px;
-    /* simplified height */
     outline: none;
     font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.message-field:focus {
+    border-color: var(--chat-primary);
+    box-shadow: 0 2px 8px rgba(27, 42, 107, 0.08);
+}
+
+.message-field::placeholder {
+    color: #94a3b8;
 }
 
 .send-btn {
@@ -296,23 +321,35 @@
     flex: 1;
     height: 44px;
     padding: 0 16px;
-    border-radius: 10px;
-    border: none;
+    border-radius: 12px;
+    border: 1px solid var(--chat-border);
     outline: none;
     line-height: 44px;
     box-sizing: border-box;
+    background: var(--chat-input-bg);
+    color: var(--chat-text-primary);
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.message-input:focus {
+    border-color: var(--chat-primary);
+}
+
+.message-input::placeholder {
+    color: #94a3b8;
 }
 
 .send-button {
     height: 44px;
     padding: 0 18px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1rem;
     line-height: 44px;
-    background: #16c79a;
+    background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
     color: #fff;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -322,12 +359,12 @@
     justify-content: center;
     flex-shrink: 0;
     box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(27, 42, 107, 0.15);
 }
 
 .send-button:hover {
-    background: #12a87f;
-    color: #fff;
     transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(27, 42, 107, 0.22);
 }
 
 .send-button:active {
@@ -354,16 +391,21 @@
 .empty-state h3 {
     color: var(--chat-text-primary);
     margin-top: 20px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
+.ncc-chat-container ::-webkit-scrollbar {
     width: 6px;
 }
 
-::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.1);
+.ncc-chat-container ::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 6px;
+}
+
+.ncc-chat-container ::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* Responsive Mobile */

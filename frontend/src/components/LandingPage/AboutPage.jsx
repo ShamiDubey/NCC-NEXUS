@@ -8,21 +8,25 @@ const AboutPage = () => {
   const cards = [
     {
       id: "discipline",
+      icon: "\u2694",
       title: "Discipline",
       description: "Instilling self-control, order, and a sense of responsibility in every cadet.",
     },
     {
       id: "unity",
+      icon: "\u2764",
       title: "Unity",
       description: "Building bonds that transcend boundaries and fostering national integration.",
     },
     {
       id: "leadership",
+      icon: "\u2605",
       title: "Leadership",
       description: "Developing future leaders who can guide and inspire others.",
     },
     {
       id: "service",
+      icon: "\u2691",
       title: "Service",
       description: "Dedication to serve the nation with selfless commitment and honor.",
     },
@@ -57,7 +61,7 @@ const AboutPage = () => {
                 }
               }}
             >
-              <div className="about-icon">{card.title[0]}</div>
+              <div className="about-icon">{card.icon}</div>
               <h3>{card.title}</h3>
               <p>{card.description}</p>
             </article>

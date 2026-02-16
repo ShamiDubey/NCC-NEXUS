@@ -1,16 +1,15 @@
-/* src/components/Ano/anoChat.css */
+/* src/components/Ano/anoChat.css — NCC Tricolor Light Theme */
 
 .ano-chat-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: #0b141a;
+  background-color: #f4f6fb;
   overflow: hidden;
 }
 
-/* Ensure this chat page uses the full width of the dashboard content
-   and is not constrained by the global "max-width" centering rule. */
+/* Ensure this chat page uses the full width of the dashboard content */
 .ano-dashboard-content > .ano-chat-wrapper {
   max-width: none;
   width: 100%;
@@ -25,14 +24,15 @@
 .ano-chat-header {
   height: 70px;
   min-height: 70px;
-  background-color: #1f2c34;
-  border-bottom: 2px solid #00a884; /* Green accent border for Officer */
+  background-color: #ffffff;
+  border-bottom: 1px solid #e6eef8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  color: #e9edef;
+  color: #0f172a;
   z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .ano-title-group h1 {
@@ -40,11 +40,12 @@
   font-weight: 700;
   margin: 0;
   letter-spacing: 0.5px;
+  color: #0f172a;
 }
 
 .encryption-note {
   font-size: 0.75rem;
-  color: #8696a0;
+  color: #64748b;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -53,17 +54,20 @@
 /* Action Buttons */
 .new-group-btn {
   background-color: transparent;
-  border: 1px solid #00a884;
-  color: #00a884;
+  border: 1px solid #1B2A6B;
+  color: #1B2A6B;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .new-group-btn:hover {
-  background-color: rgba(0, 168, 132, 0.1);
+  background: linear-gradient(135deg, #1B2A6B, #5BC0EB);
+  color: #ffffff;
+  border-color: transparent;
 }
 
 /* Chat Container Override */
@@ -73,12 +77,10 @@
   overflow: hidden;
 }
 
-/* * CRITICAL: Override ChatCommon's default 100vh 
- * to fit inside this specific container.
- */
+/* Override ChatCommon's default 100vh */
 .ano-chat-container .ncc-chat-container {
-  height: 100% !important; 
+  height: 100% !important;
   width: 100%;
   flex: 1 1 auto;
-  min-width: 0; /* allow flex children to shrink and prevent overflow */
+  min-width: 0;
 }
