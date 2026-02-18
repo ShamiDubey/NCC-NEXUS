@@ -8,6 +8,7 @@ import {
   Edit2,
   KeyRound,
   MessageSquare,
+  Calendar,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,8 @@ import logoImage from "../assets/ncc-logo.png";
 import Feed from "./feed";
 import ResetPasswordModal from "./resetPassword";
 import Chatbot from "./chatbot";
+import SuoAttendance from "./SuoAttendance";
+// Assuming these actions exist in your uiSlice for the SUO role
 import { closeSUOSidebar, toggleSUOSidebar } from "../../features/ui/uiSlice";
 
 export default function SUODashboard() {
@@ -245,16 +248,27 @@ export default function SUODashboard() {
                   <span>Chatbot</span>
                 </button>
 
-                <button
-                  className={`nav-item ${activeTab === "chat" ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("chat");
-                    if (!isSUOSidebarOpen) dispatch(toggleSUOSidebar());
-                  }}
-                >
-                  <MessageSquare size={18} />
-                  <span>Chat</span>
-                </button>
+              <button
+                className={`nav-item ${activeTab === "attendance" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("attendance");
+                  dispatch(closeSUOSidebar());
+                }}
+              >
+                <Calendar size={18} />
+                <span>Attendance</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === "chat" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("chat");
+                  if (!isSUOSidebarOpen) dispatch(toggleSUOSidebar());
+                }}
+              >
+                <MessageSquare size={18} />
+                <span>Chat</span>
+              </button>
 
                 <button className="nav-item">
                   <ImageIcon size={18} />
@@ -306,6 +320,34 @@ export default function SUODashboard() {
             {activeTab === "chat" && (
               <div className="chat-panel">
                 <ChatLayout userRole="suo" />
+          {activeTab === "attendance" && <SuoAttendance />}
+
+          {activeTab === "feed" && (
+            <Feed
+              profileImage={profileImage}
+              profileName={profileData.name}
+              mode="feed"
+            />
+          )}
+
+          {activeTab === "profile" && (
+            <>
+              <div className="banner">
+                <div className="profile-photo-wrapper">
+                  <img src={profileImage} className="profile-photo" alt="SUO Profile" />
+                  <button
+                    className="camera-icon"
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    <Camera size={16} />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    hidden
+                    onChange={handleProfileImageChange}
+                  />
+                </div>
               </div>
             )}
 
