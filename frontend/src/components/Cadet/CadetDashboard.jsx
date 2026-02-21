@@ -13,6 +13,7 @@ import {
   Award,
   BarChart3,
   Signal,
+  CalendarDays,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +23,7 @@ import logoImage from "../assets/ncc-logo.png";
 import Feed from "./Feed";
 import ResetPasswordModal from "./ResetPasswordModal";
 import Chatbot from "./Chatbot";
+import CadetAttendance from "./cadetAttendence";
 import { closeCadetSidebar } from "../../features/ui/uiSlice";
 
 export default function CadetDashboard() {
@@ -235,6 +237,17 @@ export default function CadetDashboard() {
               </button>
 
               <button
+                className={`nav-item ${activeTab === "attendance" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("attendance");
+                  setSidebarOpen(false);
+                }}
+              >
+                <CalendarDays size={18} />
+                <span>Attendance</span>
+              </button>
+
+              <button
                 className={`nav-item ${activeTab === "chatbot" ? "active" : ""}`}
                 onClick={() => {
                   setActiveTab("chatbot");
@@ -328,6 +341,8 @@ export default function CadetDashboard() {
               mode="feed"
             />
           )}
+
+          {activeTab === "attendance" && <CadetAttendance />}
 
           {activeTab === "profile" && (
             <div className="profile-page">
