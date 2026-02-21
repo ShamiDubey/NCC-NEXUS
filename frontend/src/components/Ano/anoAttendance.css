@@ -207,13 +207,16 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.25s ease;
   font-family: var(--a-font, "Poppins", sans-serif);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ano-attendance-pill:hover {
-  transform: scale(1.08);
+  transform: none;
 }
 
 .ano-attendance-pill.present {
@@ -222,7 +225,7 @@
 }
 
 .ano-attendance-pill.present:hover {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+  box-shadow: none;
 }
 
 .ano-attendance-pill.absent {
@@ -231,7 +234,7 @@
 }
 
 .ano-attendance-pill.absent:hover {
-  box-shadow: 0 0 12px rgba(229, 57, 53, 0.2);
+  box-shadow: none;
 }
 
 .ano-total-cell {
