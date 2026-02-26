@@ -1,12 +1,12 @@
-/* ================= NCC NEXUS — FEED (Premium Light) ================= */
+﻿/* ================= NCC NEXUS Ã¢â‚¬â€ FEED (Premium Light) ================= */
 
-/* ── FEED WRAPPER ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ FEED WRAPPER Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-wrapper {
   width: 100%;
   padding: 28px 28px 40px;
 }
 
-/* ── HEADER ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ HEADER Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-title {
   font-family: var(--d-font-display, "Marcellus", serif);
   font-size: 26px;
@@ -32,7 +32,7 @@
   border-radius: 1px;
 }
 
-/* ── CREATE POST ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ CREATE POST Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-create-card {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
@@ -88,7 +88,7 @@
   box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.08);
 }
 
-/* ── DIVIDER ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ DIVIDER Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .divider {
   width: 100%;
   height: 1px;
@@ -96,7 +96,7 @@
   margin: 14px 0;
 }
 
-/* ── BOTTOM ROW ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ BOTTOM ROW Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-bottom-row {
   display: flex;
   justify-content: space-between;
@@ -156,7 +156,7 @@
   transform: none;
 }
 
-/* ── FEED CARD ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ FEED CARD Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-card {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
@@ -240,7 +240,7 @@
   max-height: 420px;
 }
 
-/* ── POST STATISTICS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ POST STATISTICS Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .post-stats {
   display: flex;
   gap: 16px;
@@ -257,7 +257,7 @@
   gap: 5px;
 }
 
-/* ── ACTION ROW ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ ACTION ROW Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .feed-actions-row {
   display: flex;
   gap: 8px;
@@ -296,7 +296,7 @@
   text-align: center;
 }
 
-/* ── THREE DOT MENU ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ THREE DOT MENU Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .menu-wrapper { position: relative; }
 .cadet-feed .menu-wrapper svg {
   cursor: pointer;
@@ -310,7 +310,7 @@
   background: rgba(0, 0, 0, 0.04);
 }
 
-/* ── DROPDOWN ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ DROPDOWN Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .menu-dropdown {
   position: absolute;
   top: 32px;
@@ -353,7 +353,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── EDIT / COMMENT MODAL ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ EDIT / COMMENT MODAL Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .edit-modal-overlay {
   position: fixed;
   inset: 0;
@@ -472,7 +472,7 @@
   box-shadow: 0 6px 24px rgba(92, 107, 192, 0.35);
 }
 
-/* ── COMMENTS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ COMMENTS Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .comment-header-actions { display: flex; align-items: center; gap: 10px; }
 
 .cadet-feed .comment-sort-select {
@@ -563,7 +563,7 @@
 }
 .cadet-feed .comment-delete:hover { color: #ef4444; }
 
-/* ── COMMENT EDIT ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ COMMENT EDIT Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .comment-edit-mode { margin-top: 8px; }
 .cadet-feed .comment-edit-textarea {
   width: 100%;
@@ -622,7 +622,7 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* ── REPLIES ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ REPLIES Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .view-replies-section { margin-top: 10px; margin-left: 16px; }
 
 .cadet-feed .view-replies-btn {
@@ -667,7 +667,7 @@
 .cadet-feed .reply-item p { font-size: 13px; margin: 4px 0; color: var(--d-text-secondary, #3d4260); }
 .cadet-feed .reply-item .comment-actions { margin-top: 6px; }
 
-/* ── REPLY INPUT ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ REPLY INPUT Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .reply-input-container { margin-top: 10px; margin-left: 16px; padding-left: 14px; }
 
 .cadet-feed .reply-textarea {
@@ -727,7 +727,7 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* ── MENTIONS ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ MENTIONS Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .mention {
   color: var(--d-primary, #5C6BC0);
   font-weight: 600;
@@ -736,7 +736,7 @@
 
 .cadet-feed .mention:hover { text-decoration: underline; }
 
-/* ── SCROLLBAR ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ SCROLLBAR Ã¢â€â‚¬Ã¢â€â‚¬ */
 .cadet-feed .edit-modal::-webkit-scrollbar { width: 4px; }
 .cadet-feed .edit-modal::-webkit-scrollbar-thumb {
   background: rgba(92, 107, 192, 0.2);
@@ -744,7 +744,7 @@
 }
 .cadet-feed .edit-modal::-webkit-scrollbar-track { background: transparent; }
 
-/* ── RESPONSIVE ── */
+/* Ã¢â€â‚¬Ã¢â€â‚¬ RESPONSIVE Ã¢â€â‚¬Ã¢â€â‚¬ */
 @media (max-width: 768px) {
   .cadet-feed .feed-wrapper { padding: 16px; }
   .cadet-feed .feed-title { font-size: 22px; }
@@ -754,4 +754,190 @@
   .cadet-feed .feed-post-btn { justify-content: center; width: 100%; }
   .cadet-feed .feed-card { padding: 16px; }
   .cadet-feed .edit-modal { padding: 20px 16px; }
+}
+
+/* ================= FEED SPLIT LAYOUT ================= */
+.cadet-feed .feed-wrapper {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  column-gap: 28px;
+  align-items: start;
+}
+
+.cadet-feed .feed-wrapper > :not(.feed-side-panel) {
+  grid-column: 1;
+}
+
+.cadet-feed .feed-side-panel {
+  grid-column: 2;
+  grid-row: 1 / span 100;
+  position: sticky;
+  top: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+}
+
+.cadet-feed .feed-side-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--d-text, #1a1d2e);
+}
+
+.cadet-feed .feed-side-item {
+  padding: 14px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cadet-feed .feed-side-item:first-of-type {
+  border-top: none;
+  padding-top: 4px;
+}
+
+.cadet-feed .feed-side-head {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.cadet-feed .feed-side-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #ece5ff;
+  color: #7a3ef0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cadet-feed .feed-side-author {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--d-text, #1a1d2e);
+}
+
+.cadet-feed .feed-side-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ece5ff;
+  color: #7a3ef0;
+  font-size: 13px;
+}
+
+.cadet-feed .feed-side-text {
+  margin: 12px 0 8px;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--d-text-muted, #6b7194);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cadet-feed .feed-side-link {
+  border: none;
+  background: transparent;
+  color: #6d28d9;
+  font-size: 17px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cadet-feed .feed-side-empty {
+  color: var(--d-text-muted, #6b7194);
+  font-size: 14px;
+  margin: 6px 0 0;
+}
+
+@media (max-width: 1024px) {
+  .cadet-feed .feed-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .cadet-feed .feed-side-panel {
+    grid-column: 1;
+    grid-row: auto;
+    position: static;
+    margin-bottom: 20px;
+  }
+}
+
+/* ================= CREATE PREVIEW ================= */
+.cadet-feed .feed-preview-wrap {
+  position: relative;
+  margin-top: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: rgba(244, 246, 251, 0.55);
+  padding: 12px;
+}
+
+.cadet-feed .feed-preview-media {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.cadet-feed .feed-preview-label {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--d-text-muted, #6b7194);
+  word-break: break-word;
+}
+
+.cadet-feed .feed-preview-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.72);
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.cadet-feed .feed-preview-remove:hover {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+
+/* ================= MEDIA HARDENING ================= */
+..cadet-feed .feed-media-image,
+..cadet-feed .feed-media-video,
+..cadet-feed .feed-preview-media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  background: #e9ecf5;
+}
+
+..cadet-feed .feed-preview-wrap {
+  overflow: hidden;
+}
+
+..cadet-feed .feed-preview-label {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

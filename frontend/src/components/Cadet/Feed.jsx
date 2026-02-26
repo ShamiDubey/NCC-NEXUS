@@ -348,6 +348,21 @@ export default function Feed({
       ? posts.filter((p) => p.name === profileName)
       : posts.filter((p) => p.name !== profileName);
 
+  const pinnedAnnouncements = posts
+    .filter((p) => p.name !== profileName)
+    .slice(0, 3);
+
+  const getInitial = (name = "") => {
+    const trimmedName = String(name).trim();
+    return trimmedName ? trimmedName.charAt(0).toUpperCase() : "N";
+  };
+
+  const scrollToPost = (postId) => {
+    const target = document.getElementById(`feed-post-${postId}`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   /* ================= CREATE POST (PROFILE ONLY) ================= */
   const createPost = async () => {
     if (!text.trim() && !selectedImageFile && !selectedVideoFile) return;
@@ -1098,8 +1113,8 @@ export default function Feed({
         <h1 className="feed-title">Activity Feed</h1>
         <h3 className="feed-subtitle">Stay Connected With Your NCC Community</h3>
 
-        {/* ===== CREATE POST (PROFILE ONLY) ===== */}
-        {mode === "profile" && (
+        {/* ===== CREATE POST ===== */}
+        {true && (
           <div className="feed-create-card">
             <div className="feed-input-row">
               <img src={profileImage} className="feed-avatar" />
@@ -1110,6 +1125,41 @@ export default function Feed({
                 onChange={(e) => setText(e.target.value)}
               />
             </div>
+
+            {(selectedImage || selectedVideo) && (
+              <div className="feed-preview-wrap">
+                <button
+                  type="button"
+                  className="feed-preview-remove"
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setSelectedVideo(null);
+                    setSelectedImageFile(null);
+                    setSelectedVideoFile(null);
+                  }}
+                >
+                  <X size={14} />
+                </button>
+
+                {selectedImage ? (
+                  <img
+                    src={selectedImage}
+                    alt="Selected preview"
+                    className="feed-preview-media"
+                  />
+                ) : null}
+
+                {selectedVideo ? (
+                  <video className="feed-preview-media" controls preload="metadata">
+                    <source src={selectedVideo} />
+                  </video>
+                ) : null}
+
+                <p className="feed-preview-label">
+                  {selectedImageFile?.name || selectedVideoFile?.name}
+                </p>
+              </div>
+            )}
 
             <div className="divider" />
 
@@ -1161,7 +1211,7 @@ export default function Feed({
 
         {/* ===== POSTS ===== */}
         {visiblePosts.map((p) => (
-          <div className="feed-card" key={p.id}>
+          <div className="feed-card" key={p.id} id={`feed-post-${p.id}`}>
             <div className="feed-card-header">
               <div className="feed-user">
                 <img src={p.avatar || profileImage} className="feed-avatar" />
@@ -1234,6 +1284,31 @@ export default function Feed({
             </div>
           </div>
         ))}
+
+        <aside className="feed-side-panel">
+          <h3 className="feed-side-title">Pinned Announcements</h3>
+          {pinnedAnnouncements.length === 0 ? (
+            <p className="feed-side-empty">No announcements yet.</p>
+          ) : (
+            pinnedAnnouncements.map((announcement) => (
+              <div className="feed-side-item" key={`pinned-${announcement.id}`}>
+                <div className="feed-side-head">
+                  <div className="feed-side-avatar">{getInitial(announcement.name)}</div>
+                  <div className="feed-side-author">{announcement.name}</div>
+                  <span className="feed-side-tag">Pinned</span>
+                </div>
+                <p className="feed-side-text">{announcement.text || "Shared an update."}</p>
+                <button
+                  type="button"
+                  className="feed-side-link"
+                  onClick={() => scrollToPost(announcement.id)}
+                >
+                  View post ›
+                </button>
+              </div>
+            ))
+          )}
+        </aside>
       </div>
     </div>
   );
