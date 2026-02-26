@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, Plus, Trash2 } from "lucide-react";
 import "./suoAttendance.css";
-import {
-  ATTENDANCE_STORAGE_KEY,
-  loadAttendanceSessions,
-  saveAttendanceSessions,
-} from "../attendanceStore";
+import { attendanceApi } from "../../api/attendanceApi";
 
 const calculateAttendance = (attendance, totalDrills) => {
   const attended = attendance.filter((v) => v === "P").length;
@@ -13,36 +9,23 @@ const calculateAttendance = (attendance, totalDrills) => {
   return { attended, total: totalDrills, percent };
 };
 
+const parseDateTimeInput = (value) => {
+  const normalized = String(value || "").trim();
+  if (!normalized) return null;
+  const [date, time] = normalized.split(/\s+/);
+  if (!date || !time) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  if (!/^\d{2}:\d{2}$/.test(time) && !/^\d{2}:\d{2}:\d{2}$/.test(time)) return null;
+  return { drill_date: date, drill_time: time.length === 5 ? `${time}:00` : time };
+};
+
 const SuoAttendance = () => {
-  const [sessionState, setSessionState] = useState(loadAttendanceSessions);
-  const [selectedSession, setSelectedSession] = useState(() => Object.keys(loadAttendanceSessions())[0] || "");
-  const sessionNames = Object.keys(sessionState);
-
-  const currentSession = sessionState[selectedSession] || sessionState[sessionNames[0]];
-  const drills = currentSession.drills;
-  const cadets = currentSession.cadets;
-
-  useEffect(() => {
-    saveAttendanceSessions(sessionState);
-  }, [sessionState]);
-
-  useEffect(() => {
-    const syncAttendance = (event) => {
-      if (event.key === ATTENDANCE_STORAGE_KEY) {
-        setSessionState(loadAttendanceSessions());
-      }
-    };
-
-    window.addEventListener("storage", syncAttendance);
-    return () => window.removeEventListener("storage", syncAttendance);
-  }, []);
-
-  useEffect(() => {
-    if (!sessionNames.length) return;
-    if (!selectedSession || !sessionState[selectedSession]) {
-      setSelectedSession(sessionNames[0]);
-    }
-  }, [selectedSession, sessionNames, sessionState]);
+  const [sessionOptions, setSessionOptions] = useState([]);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [sessionDetail, setSessionDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const nextDrillDate = useMemo(() => {
     const today = new Date();
@@ -52,189 +35,223 @@ const SuoAttendance = () => {
     return `${yyyy}-${mm}-${dd} 09:00`;
   }, []);
 
-  const setCurrentSession = (updater) => {
-    setSessionState((prev) => ({
-      ...prev,
-      [selectedSession]: updater(prev[selectedSession]),
-    }));
+  const loadSessions = async (preferredSessionId = null) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await attendanceApi.getSessions();
+      const sessions = res.data?.data || [];
+      setSessionOptions(sessions);
+
+      if (!sessions.length) {
+        setSelectedSessionId("");
+        setSessionDetail({ session_id: null, session_name: "", drills: [], cadets: [] });
+        return;
+      }
+
+      const desired =
+        preferredSessionId && sessions.some((s) => String(s.session_id) === String(preferredSessionId))
+          ? String(preferredSessionId)
+          : String(sessions[0].session_id);
+      setSelectedSessionId(desired);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to load attendance sessions.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const createSession = () => {
+  const loadSessionDetail = async (sessionId) => {
+    if (!sessionId) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await attendanceApi.getSession(sessionId);
+      setSessionDetail(res.data?.data || null);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to load session details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSessionId) loadSessionDetail(selectedSessionId);
+  }, [selectedSessionId]);
+
+  const createSession = async () => {
     const nameInput = window.prompt("Enter session name (example: RDC Camp 2026):");
     if (!nameInput) return;
     const sessionName = nameInput.trim();
     if (!sessionName) return;
 
-    const exists = sessionNames.some(
-      (name) => name.toLowerCase() === sessionName.toLowerCase()
-    );
-    if (exists) {
-      window.alert("A session with this name already exists.");
+    setActionLoading(true);
+    setError("");
+    try {
+      const res = await attendanceApi.createSession({ session_name: sessionName });
+      const created = res.data?.data;
+      await loadSessions(created?.session_id);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to create session.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const removeSession = async () => {
+    if (!selectedSessionId) return;
+    if (!window.confirm("Delete this session?")) return;
+
+    setActionLoading(true);
+    setError("");
+    try {
+      await attendanceApi.deleteSession(selectedSessionId);
+      await loadSessions();
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to delete session.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const addDrill = async () => {
+    if (!sessionDetail?.session_id) return;
+    const dateInput = window.prompt("Enter drill date-time (YYYY-MM-DD HH:mm)", nextDrillDate);
+    if (!dateInput) return;
+    const parsed = parseDateTimeInput(dateInput);
+    if (!parsed) {
+      window.alert("Invalid date-time format. Use YYYY-MM-DD HH:mm");
       return;
     }
 
-    const knownCadets = Array.from(
-      new Set(
-        Object.values(sessionState)
-          .flatMap((session) => session?.cadets || [])
-          .map((cadet) => (cadet?.name || "").trim())
-          .filter(Boolean)
-      )
-    );
-
-    const firstDrillDate = window.prompt(
-      "Enter first drill date-time (YYYY-MM-DD HH:mm)",
-      nextDrillDate
-    );
-    const now = Date.now();
-    const newSession = {
-      drills: [
-        {
-          id: `d-${now}-1`,
-          label: "Drill 1",
-          date: (firstDrillDate || nextDrillDate).trim(),
-        },
-      ],
-      cadets: knownCadets.map((name, idx) => ({
-        id: `c-${now}-${idx + 1}`,
-        name,
-        attendance: ["P"],
-      })),
-    };
-
-    setSessionState((prev) => ({
-      ...prev,
-      [sessionName]: newSession,
-    }));
-    setSelectedSession(sessionName);
-  };
-
-  const removeSession = () => {
-    if (sessionNames.length <= 1) {
-      window.alert("At least one session is required.");
-      return;
+    const nextNumber = (sessionDetail.drills?.length || 0) + 1;
+    setActionLoading(true);
+    setError("");
+    try {
+      await attendanceApi.createDrill({
+        session_id: sessionDetail.session_id,
+        drill_name: `Drill ${nextNumber}`,
+        drill_date: parsed.drill_date,
+        drill_time: parsed.drill_time,
+      });
+      await loadSessionDetail(selectedSessionId);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to add drill.");
+    } finally {
+      setActionLoading(false);
     }
-
-    if (!window.confirm(`Delete session "${selectedSession}"?`)) return;
-
-    setSessionState((prev) => {
-      const next = { ...prev };
-      delete next[selectedSession];
-      return next;
-    });
   };
 
-  const toggleAttendance = (cadetIdx, drillIdx) => {
-    setCurrentSession((session) => ({
-      ...session,
-      cadets: session.cadets.map((cadet, idx) =>
-        idx !== cadetIdx
+  const removeDrill = async (drillId) => {
+    if (!drillId) return;
+    setActionLoading(true);
+    setError("");
+    try {
+      await attendanceApi.deleteDrill(drillId);
+      await loadSessionDetail(selectedSessionId);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to remove drill.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const toggleAttendance = async (cadetRegimentalNo, drillId, currentStatus) => {
+    const nextStatus = currentStatus === "P" ? "A" : "P";
+    const prev = sessionDetail;
+    const optimistic = {
+      ...sessionDetail,
+      cadets: sessionDetail.cadets.map((cadet) =>
+        cadet.regimental_no !== cadetRegimentalNo
           ? cadet
           : {
               ...cadet,
-              attendance: cadet.attendance.map((value, j) =>
-                j !== drillIdx ? value : value === "P" ? "A" : "P"
+              attendance: sessionDetail.drills.map((drill, idx) =>
+                Number(drill.drill_id) === Number(drillId) ? nextStatus : cadet.attendance[idx]
               ),
             }
       ),
-    }));
-  };
+    };
 
-  const addDrill = () => {
-    const dateInput = window.prompt("Enter drill date-time (YYYY-MM-DD HH:mm)", nextDrillDate);
-    if (!dateInput) return;
-
-    setCurrentSession((session) => {
-      const nextNumber = session.drills.length + 1;
-      return {
-        ...session,
-        drills: [
-          ...session.drills,
-          { id: `d-${selectedSession}-${Date.now()}`, label: `Drill ${nextNumber}`, date: dateInput.trim() },
-        ],
-        cadets: session.cadets.map((cadet) => ({
-          ...cadet,
-          attendance: [...cadet.attendance, "P"],
-        })),
-      };
-    });
-  };
-
-  const removeDrill = (drillIdx) => {
-    if (drills.length <= 1) {
-      window.alert("At least one drill is required.");
-      return;
-    }
-
-    setCurrentSession((session) => ({
-      ...session,
-      drills: session.drills.filter((_, idx) => idx !== drillIdx),
-      cadets: session.cadets.map((cadet) => ({
-        ...cadet,
-        attendance: cadet.attendance.filter((_, idx) => idx !== drillIdx),
-      })),
-    }));
-  };
-
-  const downloadCSV = () => {
-    let csv = "Cadet Name,";
-    drills.forEach((drill) => {
-      csv += `${drill.label} (${drill.date}),`;
-    });
-    csv += "Total Drills,Total Attendance,Percentage\n";
-
-    cadets.forEach((cadet) => {
-      csv += `${cadet.name},`;
-      cadet.attendance.forEach((status) => {
-        csv += `${status},`;
+    setSessionDetail(optimistic);
+    try {
+      await attendanceApi.patchRecords({
+        updates: [{ drill_id: drillId, regimental_no: cadetRegimentalNo, status: nextStatus }],
       });
-      const { attended, total, percent } = calculateAttendance(cadet.attendance, drills.length);
-      csv += `${total},${attended},${percent}%\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance_${selectedSession}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    } catch (err) {
+      setSessionDetail(prev);
+      window.alert(err?.response?.data?.message || "Unable to update attendance.");
+    }
   };
+
+  const downloadCSV = async () => {
+    if (!selectedSessionId) return;
+    try {
+      const response = await attendanceApi.exportSession(selectedSessionId);
+      const blob = new Blob([response.data], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attendance_${selectedSessionId}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to export attendance.");
+    }
+  };
+
+  const drills = sessionDetail?.drills || [];
+  const cadets = sessionDetail?.cadets || [];
+
+  if (loading && !sessionDetail) {
+    return (
+      <div className="suo-attendance-container">
+        <h2 className="attendance-title">Attendance Monitoring</h2>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="suo-attendance-container">
       <h2 className="attendance-title">Attendance Monitoring</h2>
+      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
 
       <div className="attendance-toolbar">
         <label className="attendance-label">Session:</label>
         <select
           className="attendance-session-select"
-          value={selectedSession}
-          onChange={(e) => setSelectedSession(e.target.value)}
+          value={selectedSessionId}
+          onChange={(e) => setSelectedSessionId(e.target.value)}
+          disabled={actionLoading || loading}
         >
-          {sessionNames.map((sessionName) => (
-            <option key={sessionName} value={sessionName}>
-              {sessionName}
+          {sessionOptions.map((sessionName) => (
+            <option key={sessionName.session_id} value={sessionName.session_id}>
+              {sessionName.session_name}
             </option>
           ))}
         </select>
 
-        <button className="attendance-btn attendance-btn-secondary" onClick={createSession}>
+        <button className="attendance-btn attendance-btn-secondary" onClick={createSession} disabled={actionLoading}>
           <Plus size={18} />
           <span>Add Session</span>
         </button>
 
-        <button className="attendance-btn attendance-btn-danger" onClick={removeSession}>
+        <button className="attendance-btn attendance-btn-danger" onClick={removeSession} disabled={actionLoading}>
           <Trash2 size={18} />
           <span>Delete Session</span>
         </button>
 
-        <button className="attendance-btn attendance-btn-secondary" onClick={addDrill}>
+        <button className="attendance-btn attendance-btn-secondary" onClick={addDrill} disabled={actionLoading}>
           <Plus size={18} />
           <span>Add Drill</span>
         </button>
 
-        <button className="attendance-btn attendance-btn-primary" onClick={downloadCSV}>
+        <button className="attendance-btn attendance-btn-primary" onClick={downloadCSV} disabled={actionLoading}>
           <Download size={18} />
           <span>Download Attendance</span>
         </button>
@@ -246,19 +263,19 @@ const SuoAttendance = () => {
             <tr>
               <th className="col-cadet">Cadet Name</th>
               {drills.map((drill, drillIdx) => (
-                <th key={drill.id} className="col-drill">
+                <th key={drill.drill_id} className="col-drill">
                   <div className="drill-head">
-                    <span>{drill.label}</span>
+                    <span>{drill.drill_name || `Drill ${drillIdx + 1}`}</span>
                     <button
                       className="drill-delete"
-                      onClick={() => removeDrill(drillIdx)}
+                      onClick={() => removeDrill(drill.drill_id)}
                       title="Remove Drill"
-                      aria-label={`Remove ${drill.label}`}
+                      aria-label={`Remove ${drill.drill_name || `Drill ${drillIdx + 1}`}`}
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
-                  <div className="drill-date">{drill.date}</div>
+                  <div className="drill-date">{`${drill.drill_date} ${String(drill.drill_time).slice(0, 5)}`}</div>
                 </th>
               ))}
               <th>Total Drills</th>
@@ -267,21 +284,25 @@ const SuoAttendance = () => {
             </tr>
           </thead>
           <tbody>
-            {cadets.map((cadet, cadetIdx) => {
-              const { attended, total, percent } = calculateAttendance(cadet.attendance, drills.length);
+            {cadets.map((cadet) => {
+              const { attended, total, percent } = calculateAttendance(cadet.attendance || [], drills.length);
               return (
-                <tr key={cadet.id}>
+                <tr key={cadet.regimental_no}>
                   <td className="cadet-name-cell">{cadet.name}</td>
                   {drills.map((drill, drillIdx) => {
-                    const status = cadet.attendance[drillIdx] || "P";
+                    const status = cadet.attendance?.[drillIdx] ?? null;
                     return (
-                      <td key={`${cadet.id}-${drill.id}`}>
-                        <button
-                          className={`attendance-pill ${status === "P" ? "present" : "absent"}`}
-                          onClick={() => toggleAttendance(cadetIdx, drillIdx)}
-                        >
-                          {status}
-                        </button>
+                      <td key={`${cadet.regimental_no}-${drill.drill_id}`}>
+                        {status ? (
+                          <button
+                            className={`attendance-pill ${status === "P" ? "present" : "absent"}`}
+                            onClick={() => toggleAttendance(cadet.regimental_no, drill.drill_id, status)}
+                          >
+                            {status}
+                          </button>
+                        ) : (
+                          <span className="attendance-pill">--</span>
+                        )}
                       </td>
                     );
                   })}

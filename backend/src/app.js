@@ -25,6 +25,7 @@ const cadetRoutes = require("./routes/cadet.routes");
 const chatRoutes = require("./routes/chat.routes");
 const postRoutes = require("./routes/post.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const attendanceRoutes = require("./modules/attendance/attendance.routes");
 
 // ------------------------------------------
 // 4. App & Server Setup
@@ -86,13 +87,16 @@ app.use("/api/cadet", cadetRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/notifications", notificationRoutes);
-// ------------------------------------------
+app.use("/api/attendance", attendanceRoutes);
+-
 // 9. Global Error Handler
 // ------------------------------------------
 app.use((err, req, res, next) => {
-  console.error("Global Error:", err.stack);
-  res.status(500).json({
-    message: "Internal Server Error",
+  const status = Number(err.status || err.statusCode || 500);
+  const message = status >= 500 ? "Internal Server Error" : err.message;
+  console.error("Global Error:", err.stack || err);
+  res.status(status).json({
+    message,
     error:
       process.env.NODE_ENV === "development"
         ? err.message
