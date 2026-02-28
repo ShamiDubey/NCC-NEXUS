@@ -15,6 +15,7 @@ import {
   Signal,
   CalendarDays,
   Video,
+  ClipboardCheck,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,9 @@ import CadetAttendance from "./cadetAttendence";
 import MeetingListPage from "../Meetings/MeetingListPage";
 import MeetingDashboardSection from "../Meetings/MeetingDashboardSection";
 import { closeCadetSidebar } from "../../features/ui/uiSlice";
+import { API_BASE_URL } from "../../api/config";
+import QuizModule from "../quiz/QuizModule";
+import { QUIZ_SESSION_STORAGE_KEY } from "../quiz/quizPersistence";
 
 export default function CadetDashboard() {
   const navigate = useNavigate();
@@ -54,7 +58,7 @@ export default function CadetDashboard() {
   const fetchProfile = async (token) => {
     try {
       setLoadingProfile(true);
-      const response = await fetch("http://localhost:5000/api/cadet/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/cadet/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -92,7 +96,7 @@ export default function CadetDashboard() {
       formData.append("profile_image", imageFile);
     }
 
-    const response = await fetch("http://localhost:5000/api/cadet/profile", {
+    const response = await fetch(`${API_BASE_URL}/api/cadet/profile`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -191,6 +195,13 @@ export default function CadetDashboard() {
     fetchProfile(token);
   }, [navigate]);
 
+  useEffect(() => {
+    const persistedQuiz = localStorage.getItem(QUIZ_SESSION_STORAGE_KEY);
+    if (persistedQuiz) {
+      setActiveTab("quiz");
+    }
+  }, []);
+
   const firstName = profileData.name ? profileData.name.split(" ")[0] : "Cadet";
 
   return (
@@ -258,6 +269,17 @@ export default function CadetDashboard() {
               >
                 <Video size={18} />
                 <span>Meetings</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === "quiz" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("quiz");
+                  setSidebarOpen(false);
+                }}
+              >
+                <ClipboardCheck size={18} />
+                <span>Quiz & Mock Tests</span>
               </button>
 
               <button
@@ -359,6 +381,12 @@ export default function CadetDashboard() {
           )}
 
           {activeTab === "attendance" && <CadetAttendance />}
+          {activeTab === "quiz" && (
+            <QuizModule
+              participantName={profileData.name || "Cadet"}
+              participantRank={profileData.rank || "Cadet"}
+            />
+          )}
 
           {activeTab === "profile" && (
             <div className="profile-page">
@@ -411,6 +439,16 @@ export default function CadetDashboard() {
                     <p>Enrollment</p>
                   </div>
                 </div>
+              </div>
+
+              <div className="cadet-quiz-launch-card">
+                <div>
+                  <h3>Quiz &amp; Mock Tests</h3>
+                  <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
+                </div>
+                <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
+                  Start Quiz
+                </button>
               </div>
 
               <MeetingDashboardSection sectionTitle="Invited Meetings" mode="INVITED" basePath="/meetings" />
