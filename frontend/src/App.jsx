@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 // 1. Landing & Auth Imports
-import Home from "./components/LandingPage/Home";
+import Home from "./components/LandingPage/home";
 import LoginPage from "./components/LandingPage/LoginPage";
 import AnoLogin from "./components/LandingPage/AnoLogin";
 

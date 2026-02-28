@@ -15,6 +15,7 @@ import {
   Award,
   Users,
   Video,
+  ClipboardCheck,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +31,9 @@ import MeetingCreatePage from "../Meetings/MeetingCreatePage";
 import MeetingDashboardSection from "../Meetings/MeetingDashboardSection";
 import { canCreateMeeting, getCurrentRole } from "../Meetings/meetingUtils";
 import { closeSUOSidebar, toggleSUOSidebar } from "../../features/ui/uiSlice";
+import { API_BASE_URL } from "../../api/config";
+import QuizModule from "../quiz/QuizModule";
+import { QUIZ_SESSION_STORAGE_KEY } from "../quiz/quizPersistence";
 
 export default function SUODashboard() {
   const navigate = useNavigate();
@@ -56,7 +60,7 @@ export default function SUODashboard() {
   const fetchProfile = async (token) => {
     try {
       setLoadingProfile(true);
-      const response = await fetch("http://localhost:5000/api/cadet/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/cadet/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -100,7 +104,7 @@ export default function SUODashboard() {
       formData.append("profile_image", imageFile);
     }
 
-    const response = await fetch("http://localhost:5000/api/cadet/profile", {
+    const response = await fetch(`${API_BASE_URL}/api/cadet/profile`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -199,6 +203,13 @@ export default function SUODashboard() {
     fetchProfile(token);
   }, [navigate]);
 
+  useEffect(() => {
+    const persistedQuiz = localStorage.getItem(QUIZ_SESSION_STORAGE_KEY);
+    if (persistedQuiz) {
+      setActiveTab("quiz");
+    }
+  }, []);
+
   const role = getCurrentRole();
   const canCreate = canCreateMeeting(role);
 
@@ -288,6 +299,17 @@ export default function SUODashboard() {
                 </button>
 
                 <button
+                  className={`nav-item ${activeTab === "quiz" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("quiz");
+                    dispatch(closeSUOSidebar());
+                  }}
+                >
+                  <ClipboardCheck size={18} />
+                  <span>Quiz & Mock Tests</span>
+                </button>
+
+                <button
                   className={`nav-item ${activeTab === "chat" ? "active" : ""}`}
                   onClick={() => {
                     setActiveTab("chat");
@@ -350,6 +372,12 @@ export default function SUODashboard() {
             {activeTab === "attendance" && <SuoAttendance />}
 
             {activeTab === "chatbot" && <Chatbot />}
+            {activeTab === "quiz" && (
+              <QuizModule
+                participantName={profileData.name || "SUO"}
+                participantRank={profileData.rank || "Senior Under Officer"}
+              />
+            )}
 
             {activeTab === "meetings" && (
               <div className="meeting-tab-shell">
@@ -411,6 +439,16 @@ export default function SUODashboard() {
                       <p>Squad Leader</p>
                     </div>
                   </div>
+                </div>
+
+                <div className="cadet-quiz-launch-card">
+                  <div>
+                    <h3>Quiz &amp; Mock Tests</h3>
+                    <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
+                  </div>
+                  <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
+                    Start Quiz
+                  </button>
                 </div>
 
                 <MeetingDashboardSection sectionTitle="My Meetings" mode="MY" basePath="/meetings" />
