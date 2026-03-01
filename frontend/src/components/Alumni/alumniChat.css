@@ -1,0 +1,66 @@
+/* ================= NCC NEXUS — ALUMNI CHAT (Premium Light) ================= */
+
+.alumni-chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 4px);
+  width: 100%;
+  background: var(--al-bg, #f0f2f8);
+  overflow: hidden;
+}
+
+/* Alumni Chat Header */
+.alumni-chat-header {
+  height: 64px;
+  min-height: 64px;
+  background: var(--al-surface, #ffffff);
+  border-bottom: 1px solid var(--al-border, rgba(0, 0, 0, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  color: var(--al-text, #1a1d2e);
+  box-shadow: 0 2px 12px rgba(92, 107, 192, 0.04);
+  z-index: 5;
+}
+
+.header-left h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--al-navy, #1A237E);
+  font-family: var(--al-font-display, "Marcellus", serif);
+}
+
+.header-left .subtitle {
+  font-size: 0.75rem;
+  color: var(--al-text-muted, #8b90a8);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--al-font-tech, "Manrope", sans-serif);
+  font-weight: 600;
+  display: block;
+}
+
+.status-badge {
+  font-size: 0.8rem;
+  background: rgba(92, 107, 192, 0.08);
+  color: var(--al-primary, #5C6BC0);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(92, 107, 192, 0.12);
+  font-weight: 600;
+  font-family: var(--al-font, "Poppins", sans-serif);
+}
+
+/* Chat Container */
+.alumni-chat-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.alumni-chat-container .ncc-chat-container {
+  height: 100% !important;
+  width: 100%;
+}

@@ -1,32 +1,74 @@
 import { NavLink } from "react-router-dom";
-import { FaUserPlus, FaUsers, FaSignOutAlt } from "react-icons/fa";
+import { FaUserPlus, FaUsers, FaComments, FaClipboardList, FaTachometerAlt, FaVideo } from "react-icons/fa";
 import nccLogo from "../assets/ncc-logo.png";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen = true, onClose }) => {
   return (
-    <aside className="sidebar">
-      
-      <div className="sidebar-header">
-        <img src={nccLogo} alt="NCC Logo" className="sidebar-logo" />
-        <div>
-          <h3>NCC Nexus</h3>
-          <span>ANO Portal</span>
+    <aside className={`sidebar${isOpen ? " open" : ""}`}>
+      <div className="sidebar-top-section">
+        <div className="sidebar-header">
+          <div className="sidebar-logo-ring">
+            <img src={nccLogo} alt="NCC Logo" className="sidebar-logo" />
+          </div>
+          <div className="sidebar-brand">
+            <h3>NCC NEXUS</h3>
+            <span>ANO COMMAND PORTAL</span>
+          </div>
         </div>
+
+        <div className="sidebar-divider" />
+
+        <nav className="menu">
+          <NavLink
+            to="/ano"
+            end
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaTachometerAlt /> <span>Dashboard</span>
+          </NavLink>
+
+          <NavLink
+            to="add-cadet"
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaUserPlus /> <span>Add Cadet</span>
+          </NavLink>
+
+          <NavLink
+            to="manage-cadets"
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaUsers /> <span>Manage Cadets</span>
+          </NavLink>
+
+          <NavLink
+            to="ano-attendance"
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaClipboardList /> <span>Attendance</span>
+          </NavLink>
+
+          <NavLink
+            to="meetings"
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaVideo /> <span>Meetings</span>
+          </NavLink>
+
+          <NavLink
+            to="chat"
+            className="menu-item"
+            onClick={() => (typeof onClose === "function" ? onClose() : undefined)}
+          >
+            <FaComments /> <span>Chat</span>
+          </NavLink>
+        </nav>
       </div>
-
-      <nav className="menu">
-        <NavLink to="add-cadet" className="menu-item">
-          <FaUserPlus /> Add Cadet
-        </NavLink>
-
-        <NavLink to="manage-cadets" className="menu-item">
-          <FaUsers /> Manage Cadets
-        </NavLink>
-
-        <button className="menu-item logout">
-          <FaSignOutAlt /> Logout
-        </button>
-      </nav>
     </aside>
   );
 };

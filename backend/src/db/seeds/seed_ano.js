@@ -1,10 +1,7 @@
-import bcrypt from "bcrypt";
+const bcrypt = require("bcrypt");
 
-export async function seed(knex) {
+exports.seed = async function (knex) {
 
-  /* -------------------------------
-     1️⃣ Prevent duplicate seed
-  --------------------------------*/
   const existingANO = await knex("users")
     .where({ email: "ano@ncc.com" })
     .first();
@@ -14,30 +11,30 @@ export async function seed(knex) {
     return;
   }
 
-  /* -------------------------------
-     2️⃣ Seed Colleges
-  --------------------------------*/
+  // ======================
+  // 1. Seed College
+  // ======================
   const [college] = await knex("colleges")
-  .insert({
-    college_code: "0801",
-    college_name: "Shri Govindram Seksaria Institute of Technology and Science",
-    short_name: "SGSITS",
-    city: "Indore",
-  })
-  .returning("*");
+    .insert({
+      college_code: "0801",
+      college_name: "Shri Govindram Seksaria Institute of Technology and Science",
+      short_name: "SGSITS",
+      city: "Indore",
+    })
+    .returning("*");
 
-  /* -------------------------------
-     3️⃣ Seed Cadet Ranks
-  --------------------------------*/
+  // ======================
+  // 2. Seed Cadet Ranks
+  // ======================
   const ranks = [
-    "Senior Under Officer",
-    "Under Officer",
-    "Company Sergeant Major",
-    "Company Quarter Master Sergeant",
-    "Sergeant",
-    "Corporal",
-    "Lance Corporal",
     "Cadet",
+    "Lance Corporal",
+    "Corporal",
+    "Sergeant",
+    "Company Quarter Master Sergeant",
+    "Company Sergeant Major",
+    "Under Officer",
+    "Senior Under Officer"
   ];
 
   for (const rank of ranks) {
@@ -47,23 +44,10 @@ export async function seed(knex) {
       .ignore();
   }
 
-  /* -------------------------------
-     4️⃣ Seed Cadet Designations
-  --------------------------------*/
-  const designations = ["Cadet", "SUO"];
-
-  for (const role of designations) {
-    await knex("cadet_designations")
-      .insert({ name: role })
-      .onConflict("name")
-      .ignore();
-  }
-
-  /* -------------------------------
-     5️⃣ Create ANO User
-  --------------------------------*/
-  const password = "ANO@123"; // temporary
-  const password_hash = await bcrypt.hash(password, 10);
+  // ======================
+  // 3. Create ANO User
+  // ======================
+  const password_hash = await bcrypt.hash("ANO@123", 10);
 
   const [user] = await knex("users")
     .insert({
@@ -75,9 +59,9 @@ export async function seed(knex) {
     })
     .returning("*");
 
-  /* -------------------------------
-     6️⃣ Create ANO Profile
-  --------------------------------*/
+  // ======================
+  // 4. Create ANO Profile
+  // ======================
   await knex("anos").insert({
     user_id: user.user_id,
     designation: "Associate NCC Officer",
@@ -85,4 +69,4 @@ export async function seed(knex) {
   });
 
   console.log("Initial seed completed successfully");
-}
+};

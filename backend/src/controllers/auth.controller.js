@@ -40,51 +40,95 @@ const anoLogin = async (req, res) => {
 };
 
 const cadetLogin = async (req, res) => {
-  const { regimental_no, password } = req.body;
+  const { regimental_no, password, login_type } = req.body;
+  // login_type = "CADET" | "SUO" | "ALUMNI"
+
+  if (!regimental_no || !password || !login_type) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   try {
-    const cadet = await db("cadet_profiles as cp")
-      .join("users as u", "cp.user_id", "u.user_id")
-      .where("cp.regimental_no", regimental_no)
-      .select(
-        "u.user_id",
-        "u.password_hash",
-        "u.role",
-        "cp.full_name"
-      )
-      .first();
+    const loginId = String(regimental_no).trim();
+    let userData;
 
-    if (!cadet) {
+    if (login_type === "ALUMNI") {
+      userData = await db("users as u")
+        .leftJoin("cadet_profiles as cp", "cp.user_id", "u.user_id")
+        .where("u.role", "ALUMNI")
+        .andWhere((qb) => {
+          qb.where("u.email", loginId)
+            .orWhere("u.username", loginId)
+            .orWhere("cp.regimental_no", loginId);
+        })
+        .select(
+          "u.user_id",
+          "u.password_hash",
+          "u.role as system_role",
+          "u.username as full_name",
+          "cp.regimental_no"
+        )
+        .first();
+    } else {
+      userData = await db("cadet_profiles as cp")
+        .join("users as u", "cp.user_id", "u.user_id")
+        .leftJoin("cadet_ranks as r", "cp.rank_id", "r.id")
+        .where("cp.regimental_no", loginId)
+        .select(
+          "u.user_id",
+          "u.password_hash",
+          "u.role as system_role",
+          "cp.full_name",
+          "cp.regimental_no",
+          "r.rank_name"
+        )
+        .first();
+    }
+
+    if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, cadet.password_hash);
+    const isMatch = await bcrypt.compare(password, userData.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const designation = await db("cadet_roles as cr")
-      .join("cadet_designations as cd", "cr.designation_id", "cd.id")
-      .where("cr.regimental_no", regimental_no)
-      .whereNull("cr.end_date")
-      .select("cd.name")
-      .first();
+    if (login_type === "ALUMNI") {
+      if (userData.system_role !== "ALUMNI") {
+        return res.status(403).json({ message: "Not an Alumni account" });
+      }
+    }
+
+    if (login_type === "SUO") {
+      if (
+        userData.system_role !== "CADET" ||
+        userData.rank_name !== "Senior Under Officer"
+      ) {
+        return res.status(403).json({ message: "Not authorized as SUO" });
+      }
+    }
+
+    if (login_type === "CADET") {
+      if (userData.system_role !== "CADET") {
+        return res.status(403).json({ message: "Not a Cadet account" });
+      }
+    }
 
     const token = generateToken({
-      user_id: cadet.user_id,
-      role: cadet.role,
-      designation: designation?.name || "Cadet",
-      regimental_no,
+      user_id: userData.user_id,
+      role: userData.system_role,
+      rank: userData.rank_name,
+      regimental_no: userData.regimental_no || null,
     });
 
     return res.json({
       message: "Login successful",
       token,
       user: {
-        regimental_no,
-        role: cadet.role,
-        designation: designation?.name || "Cadet",
-        name: cadet.full_name,
+        regimental_no: userData.regimental_no || null,
+        name: userData.full_name,
+        role: userData.system_role,
+        rank: userData.rank_name || null,
       },
     });
   } catch (err) {
