@@ -16,6 +16,7 @@ import {
   Users,
   Video,
   ClipboardCheck,
+  Mic,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -33,13 +34,14 @@ import { canCreateMeeting, getCurrentRole } from "../Meetings/meetingUtils";
 import { closeSUOSidebar, toggleSUOSidebar } from "../../features/ui/uiSlice";
 import { API_BASE_URL } from "../../api/config";
 import QuizModule from "../quiz/QuizModule";
+import VoiceCommandsModule from "../VoiceCommands/VoiceCommandsModule";
 import { clearAuthStorage, hasAuthFor } from "../../utils/authState";
 import { getStoredDashboardTab, persistDashboardTab } from "../../utils/dashboardState";
 import { resolveProfileImage } from "../../utils/profileImage";
 
 export default function SUODashboard() {
   const SUO_TAB_STORAGE_KEY = "suo_dashboard_active_tab";
-  const SUO_ALLOWED_TABS = ["profile", "feed", "chatbot", "attendance", "meetings", "quiz", "chat"];
+  const SUO_ALLOWED_TABS = ["profile", "feed", "chatbot", "attendance", "meetings", "quiz", "voice", "chat"];
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -121,7 +123,7 @@ export default function SUODashboard() {
     throw new Error(data.message || "Unknown error");
   }
 
-  return data; // ✅ MUST return
+  return data; // MUST return
 };
 
   const handleProfileImageChange = async (e) => {
@@ -328,6 +330,16 @@ export default function SUODashboard() {
                   <ClipboardCheck size={18} />
                   <span>Quiz & Mock Tests</span>
                 </button>
+                <button
+                  className={`nav-item ${activeTab === "voice" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("voice");
+                    dispatch(closeSUOSidebar());
+                  }}
+                >
+                  <Mic size={18} />
+                  <span>Voice Commands</span>
+                </button>
 
                 <button
                   className={`nav-item ${activeTab === "chat" ? "active" : ""}`}
@@ -398,6 +410,8 @@ export default function SUODashboard() {
                 participantRank={profileData.rank || "Senior Under Officer"}
               />
             )}
+
+            {activeTab === "voice" && <VoiceCommandsModule />}
 
             {activeTab === "meetings" && (
               <div className="meeting-tab-shell">
@@ -549,5 +563,6 @@ export default function SUODashboard() {
     </>
   );
 }
+
 
 

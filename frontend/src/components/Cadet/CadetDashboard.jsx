@@ -10,6 +10,7 @@ import {
   Rss,
   Shield,
   MessageSquare,
+  Mic,
   Award,
   BarChart3,
   Signal,
@@ -31,13 +32,14 @@ import MeetingDashboardSection from "../Meetings/MeetingDashboardSection";
 import { closeCadetSidebar } from "../../features/ui/uiSlice";
 import { API_BASE_URL } from "../../api/config";
 import QuizModule from "../quiz/QuizModule";
+import VoiceCommandsModule from "../VoiceCommands/VoiceCommandsModule";
 import { clearAuthStorage, hasAuthFor } from "../../utils/authState";
 import { getStoredDashboardTab, persistDashboardTab } from "../../utils/dashboardState";
 import { resolveProfileImage } from "../../utils/profileImage";
 
 export default function CadetDashboard() {
   const CADET_TAB_STORAGE_KEY = "cadet_dashboard_active_tab";
-  const CADET_ALLOWED_TABS = ["profile", "feed", "attendance", "meetings", "quiz", "chatbot", "chat"];
+  const CADET_ALLOWED_TABS = ["profile", "feed", "attendance", "meetings", "quiz", "voice", "chatbot", "chat"];
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -335,6 +337,16 @@ const [isEditingBio, setIsEditingBio] = useState(false);
                 <ClipboardCheck size={18} />
                 <span>Quiz & Mock Tests</span>
               </button>
+              <button
+                className={`nav-item ${activeTab === "voice" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab("voice");
+                  setSidebarOpen(false);
+                }}
+              >
+                <Mic size={18} />
+                <span>Voice Commands</span>
+              </button>
 
               <button
                 className={`nav-item ${activeTab === "chatbot" ? "active" : ""}`}
@@ -443,6 +455,8 @@ const [isEditingBio, setIsEditingBio] = useState(false);
               participantRank={profileData.rank || "Cadet"}
             />
           )}
+
+          {activeTab === "voice" && <VoiceCommandsModule />}
 
           {activeTab === "profile" && (
             <div className="profile-page">
