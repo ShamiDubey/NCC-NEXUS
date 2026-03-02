@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Video,
   Camera,
+  Users,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -297,6 +298,17 @@ const startEditBio = () => {
                 >
                   <MessageSquare size={18} />
                   <span>Chat</span>
+                </button>
+
+                <button
+                  className="nav-item"
+                  onClick={() => {
+                    navigate("/community");
+                    dispatch(closeAlumniSidebar());
+                  }}
+                >
+                  <Users size={18} />
+                  <span>Community</span>
                 </button>
 
                 <button

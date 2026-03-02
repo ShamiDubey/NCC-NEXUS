@@ -13,6 +13,7 @@ import {
   Award,
   BarChart3,
   Signal,
+  Users,
   CalendarDays,
   Video,
   ClipboardCheck,
@@ -356,6 +357,17 @@ const [isEditingBio, setIsEditingBio] = useState(false);
               >
                 <MessageSquare size={18} />
                 <span>Chat</span>
+              </button>
+
+              <button
+                className="nav-item"
+                onClick={() => {
+                  navigate("/community");
+                  setSidebarOpen(false);
+                }}
+              >
+                <Users size={18} />
+                <span>Community</span>
               </button>
 
               <button className="nav-item" onClick={() => setSidebarOpen(false)}>

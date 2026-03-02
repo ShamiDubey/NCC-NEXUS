@@ -35,6 +35,7 @@ import MeetingDetailsPage from "./components/Meetings/MeetingDetailsPage";
 import MeetingRoomPage from "./components/Meetings/MeetingRoomPage";
 import QuizModule from "./components/quiz/QuizModule";
 import QuizLayout from "./components/quiz/QuizLayout";
+import Community from "./pages/Community";
 
 const App = () => {
   return (
@@ -66,6 +67,7 @@ const App = () => {
         <Route path="/meetings/create" element={<MeetingCreatePage />} />
         <Route path="/meetings/:meetingId" element={<MeetingDetailsPage />} />
         <Route path="/meetings/:meetingId/room" element={<MeetingRoomPage />} />
+        <Route path="/community" element={<Community />} />
 
         <Route
           path="/quiz/attempt/:attemptId"

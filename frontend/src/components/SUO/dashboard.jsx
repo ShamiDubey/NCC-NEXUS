@@ -343,6 +343,17 @@ export default function SUODashboard() {
                 <button
                   className="nav-item"
                   onClick={() => {
+                    navigate("/community");
+                    dispatch(closeSUOSidebar());
+                  }}
+                >
+                  <Users size={18} />
+                  <span>Community</span>
+                </button>
+
+                <button
+                  className="nav-item"
+                  onClick={() => {
                     setShowReset(true);
                     dispatch(closeSUOSidebar());
                   }}
