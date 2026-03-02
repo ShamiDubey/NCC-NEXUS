@@ -235,7 +235,7 @@ export default function CommunityFeed() {
               <img src={nccLogo} alt="NCC" className="community-title-logo" />
             </div>
             <div>
-              <h1>Community</h1>
+              <h1>Community Updates</h1>
               <p>Updates, events, polls &amp; media</p>
               <div className="community-title-tricolor" />
               <div className="community-hero-badges">
