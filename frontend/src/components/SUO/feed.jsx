@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
   Video,
@@ -402,6 +402,19 @@ export default function Feed({
     mode === "profile"
       ? posts.filter((p) => p.name === profileName)
       : posts.filter((p) => p.name !== profileName);
+
+  const recentAnnouncements = [...visiblePosts]
+    .sort((a, b) => Number(b?.createdAt || 0) - Number(a?.createdAt || 0))
+    .slice(0, 5);
+  const timelinePosts = visiblePosts;
+
+  const getInitial = (name = "") => String(name).trim().charAt(0).toUpperCase() || "N";
+
+  const scrollToPost = (postId) => {
+    const target = document.getElementById(`feed-post-${postId}`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
 
   /* ================= CREATE POST (PROFILE ONLY) ================= */
@@ -967,7 +980,7 @@ export default function Feed({
   }, [posts]);
 
   return (
-    <div className="cadet-feed">
+    <div className="suo-feed">
       {/* ================= EDIT POST MODAL ================= */}
       {editingPost && (
         <div className="edit-modal-overlay" onClick={() => setEditingPost(null)}>
@@ -1094,16 +1107,16 @@ export default function Feed({
           </div>
         )}
         <aside className="feed-side-panel">
-          <h3 className="feed-side-title">Pinned Announcements</h3>
-          {pinnedAnnouncements.length === 0 ? (
-            <p className="feed-side-empty">No announcements yet.</p>
+          <h3 className="feed-side-title">Recent Posts</h3>
+          {recentAnnouncements.length === 0 ? (
+            <p className="feed-side-empty">No recent posts yet.</p>
           ) : (
-            pinnedAnnouncements.map((announcement) => (
+            recentAnnouncements.map((announcement) => (
               <div className="feed-side-item" key={`pinned-${announcement.id}`}>
                 <div className="feed-side-head">
                   <div className="feed-side-avatar">{getInitial(announcement.name)}</div>
                   <div className="feed-side-author">{announcement.name}</div>
-                  <span className="feed-side-tag">Pinned</span>
+                  <span className="feed-side-tag">Recent</span>
                 </div>
                 <p className="feed-side-text">{announcement.text || "Shared an update."}</p>
                 <button
@@ -1111,7 +1124,7 @@ export default function Feed({
                   className="feed-side-link"
                   onClick={() => scrollToPost(announcement.id)}
                 >
-                  View post ›
+                  View post â€º
                 </button>
               </div>
             ))
@@ -1121,7 +1134,7 @@ export default function Feed({
 
 
         {/* ===== POSTS ===== */}
-        {visiblePosts.map((p) => (
+        {timelinePosts.map((p) => (
           <div className={`feed-card${commentPost?.id === p.id ? " feed-card-expanded" : ""}`} key={p.id} id={`feed-post-${p.id}`}>
             <div className="feed-card-content">
             <div className="feed-card-header">
@@ -1135,7 +1148,7 @@ export default function Feed({
                     {p.name} <span className="feed-role">{p.role}</span>
                   </h3>
                   <p className="feed-meta">
-                    {formatTime(p.createdAt)} • PUBLIC FEED
+                    {formatTime(p.createdAt)} â€¢ PUBLIC FEED
                   </p>
                 </div>
               </div>
@@ -1314,6 +1327,7 @@ export default function Feed({
     </div>
   );
 }
+
 
 
 

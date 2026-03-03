@@ -256,10 +256,20 @@ const SuoAttendance = () => {
     }
   };
 
-  // Reverse drills so newest appears first; build index map for attendance lookup
+  // Keep newest drills first using created_at/drill_id/date-time; preserve original index for attendance mapping
   const rawDrills = sessionDetail?.drills || [];
-  const drillOrder = rawDrills.map((_, i) => i).reverse();
-  const drills = drillOrder.map((i) => rawDrills[i]);
+  const sortedDrillEntries = rawDrills
+    .map((drill, originalIndex) => ({
+      drill,
+      originalIndex,
+      sortValue: getDrillSortValue(drill),
+    }))
+    .sort((a, b) => {
+      const delta = Number(b.sortValue || 0) - Number(a.sortValue || 0);
+      if (delta !== 0) return delta;
+      return b.originalIndex - a.originalIndex;
+    });
+  const drills = sortedDrillEntries.map((entry) => entry.drill);
   const cadets = sessionDetail?.cadets || [];
 
   if (loading && !sessionDetail) {
@@ -364,12 +374,12 @@ const SuoAttendance = () => {
                     {drills.map((drill, i) => (
                       <th key={drill.drill_id} className="col-drill">
                         <div className="drill-head">
-                          <span>{drill.drill_name || `Drill ${drillOrder[i] + 1}`}</span>
+                          <span>{drill.drill_name || `Drill ${sortedDrillEntries[i].originalIndex + 1}`}</span>
                           <button
                             className="drill-delete"
                             onClick={() => removeDrill(drill.drill_id)}
                             title="Remove Drill"
-                            aria-label={`Remove ${drill.drill_name || `Drill ${drillIdx + 1}`}`}
+                            aria-label={`Remove ${drill.drill_name || `Drill ${sortedDrillEntries[i].originalIndex + 1}`}`}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -389,7 +399,7 @@ const SuoAttendance = () => {
                       <tr key={cadet.regimental_no}>
                         <td className="cadet-name-cell">{cadet.name}</td>
                         {drills.map((drill, i) => {
-                          const status = cadet.attendance?.[drillOrder[i]] ?? null;
+                          const status = cadet.attendance?.[sortedDrillEntries[i].originalIndex] ?? null;
                           return (
                             <td key={`${cadet.regimental_no}-${drill.drill_id}`}>
                               {status ? (

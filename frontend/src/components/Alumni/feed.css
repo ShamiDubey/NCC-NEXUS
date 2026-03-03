@@ -1,9 +1,38 @@
 ﻿/* ================= NCC NEXUS Ã¢â‚¬â€ ALUMNI FEED (Premium Light) ================= */
 
 .alumni-feed .feed-wrapper {
-  width: min(555px, 100%);
+  width: min(1180px, 100%);
   margin: 0 auto;
   padding: 32px 16px;
+}
+
+@media (min-width: 1024px) {
+  .alumni-feed .feed-wrapper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .alumni-feed .feed-title,
+  .alumni-feed .feed-subtitle {
+    grid-column: 1 / -1;
+  }
+
+  .alumni-feed .feed-create-card,
+  .alumni-feed .feed-card {
+    grid-column: 1;
+  }
+
+  .alumni-feed .feed-side-panel {
+    grid-column: 2;
+    grid-row: 3 / span 999;
+    position: sticky;
+    top: 94px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    margin-bottom: 0;
+  }
 }
 
 /* Ã¢â€â‚¬Ã¢â€â‚¬ Header Ã¢â€â‚¬Ã¢â€â‚¬ */
@@ -214,6 +243,92 @@
   font-size: 14px;
   line-height: 1.65;
   color: var(--al-text, #1a1d2e);
+}
+
+/* ================= Pinned Announcements ================= */
+.alumni-feed .feed-side-panel {
+  background: var(--al-surface, #ffffff);
+  border: 1px solid var(--al-border, rgba(0,0,0,0.06));
+  border-radius: 16px;
+  padding: 18px;
+  margin: 0 0 18px;
+}
+
+.alumni-feed .feed-side-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--al-text, #1a1d2e);
+  font-family: var(--al-font-display, "Marcellus", serif);
+}
+
+.alumni-feed .feed-side-empty {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--al-text-muted, #8b90a8);
+}
+
+.alumni-feed .feed-side-item {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--al-bg, #f0f2f8);
+  border: 1px solid var(--al-border, rgba(0,0,0,0.06));
+}
+
+.alumni-feed .feed-side-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alumni-feed .feed-side-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--al-primary, #5C6BC0), var(--al-navy, #1A237E));
+}
+
+.alumni-feed .feed-side-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--al-text, #1a1d2e);
+}
+
+.alumni-feed .feed-side-tag {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--al-primary, #5C6BC0);
+  background: rgba(92, 107, 192, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.alumni-feed .feed-side-text {
+  margin: 8px 0 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--al-text-secondary, #3d4260);
+}
+
+.alumni-feed .feed-side-link {
+  border: none;
+  background: transparent;
+  color: var(--al-primary, #5C6BC0);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.alumni-feed .feed-side-link:hover {
+  color: var(--al-navy, #1A237E);
 }
 
 .alumni-feed .feed-media-image {

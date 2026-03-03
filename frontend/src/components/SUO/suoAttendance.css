@@ -444,51 +444,112 @@
 
 @media (max-width: 768px) {
   .suo-attendance-container {
-    padding: 16px 14px;
+    padding: 12px 10px;
   }
   .attendance-title {
-    font-size: 22px;
+    font-size: 20px;
   }
   .attendance-toolbar {
-    gap: 8px;
+    margin-top: 12px;
+    gap: 6px;
   }
   .attendance-toolbar-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
   }
   .attendance-label {
-    grid-column: 1 / -1;
+    width: 100%;
+    font-size: 12px;
   }
   .attendance-session-select {
-    grid-column: 1 / -1;
+    width: 100%;
     width: 100%;
     min-width: 0;
-    height: 38px;
-    font-size: 13px;
+    height: 30px;
+    font-size: 11px;
+    border-radius: 8px;
+    padding: 0 10px;
   }
   .attendance-btn {
-    height: 36px;
-    padding: 0 12px;
-    font-size: 12px;
-    border-radius: 10px;
+    height: 28px;
+    padding: 0 9px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 7px;
     justify-content: center;
-  }
-  .attendance-btn span {
-    display: none;
+    gap: 4px;
+    width: auto;
+    box-shadow: none;
   }
   .attendance-btn svg {
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
+  }
+  .attendance-btn-primary,
+  .attendance-btn-danger {
+    box-shadow: none;
+  }
+  .attendance-collapse-btn {
+    min-height: 30px;
+    padding: 0 9px;
+    border-radius: 8px;
+    font-size: 10px;
+  }
+  .attendance-section {
+    margin-top: 12px;
+  }
+  .attendance-table-card {
+    margin-top: 10px;
+    border-radius: 12px;
+  }
+  .attendance-table thead th {
+    font-size: 10px;
+    letter-spacing: 0.02em;
   }
   .attendance-table th,
   .attendance-table td {
-    padding: 10px 8px;
+    padding: 8px 6px;
   }
   .col-cadet {
-    min-width: 120px;
+    min-width: 108px;
+    padding-left: 10px;
   }
   .col-drill {
-    min-width: 100px;
+    min-width: 76px;
+  }
+  .drill-head {
+    gap: 4px;
+  }
+  .drill-head > span {
+    font-size: 10px;
+    line-height: 1.15;
+    display: inline-block;
+    max-width: 46px;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .drill-date {
+    font-size: 10px;
+    margin-top: 2px;
+    max-width: 66px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cadet-name-cell {
+    padding-left: 10px;
+    font-size: 12px;
+  }
+  .attendance-pill {
+    width: 32px;
+    height: 24px;
+    font-size: 10px;
+    border-radius: 6px;
+  }
+  .total-cell {
+    font-size: 11px;
   }
   .leave-row {
     flex-direction: column;
@@ -504,45 +565,63 @@
 
 @media (max-width: 480px) {
   .suo-attendance-container {
-    padding: 10px 8px;
+    padding: 8px 6px;
   }
   .attendance-title {
-    font-size: 18px;
+    font-size: 17px;
   }
   .attendance-toolbar {
-    gap: 6px;
+    gap: 5px;
+  }
+  .attendance-toolbar-row {
+    gap: 5px;
   }
   .attendance-btn {
-    height: 32px;
-    padding: 0 10px;
-    font-size: 11px;
-    border-radius: 8px;
+    height: 26px;
+    padding: 0 7px;
+    font-size: 9.5px;
+    font-weight: 600;
+    border-radius: 7px;
+    gap: 3px;
+  }
+  .attendance-btn svg {
+    width: 12px;
+    height: 12px;
   }
   .attendance-session-select {
-    height: 34px;
-    font-size: 12px;
-    padding: 0 10px;
+    height: 27px;
+    font-size: 10px;
+    padding: 0 8px;
+  }
+  .attendance-collapse-btn {
+    min-height: 28px;
+    font-size: 9.5px;
+    padding: 0 8px;
+    border-radius: 7px;
   }
   .attendance-table th,
   .attendance-table td {
-    padding: 6px 5px;
+    padding: 5px 4px;
     font-size: 0.8rem;
   }
   .col-cadet {
-    min-width: 100px;
-    padding-left: 10px;
+    min-width: 96px;
+    padding-left: 8px;
   }
   .cadet-name-cell {
-    padding-left: 10px;
-    font-size: 12px;
+    padding-left: 8px;
+    font-size: 11px;
   }
   .col-drill {
-    min-width: 80px;
+    min-width: 68px;
   }
   .attendance-pill {
-    width: 34px;
-    height: 26px;
-    font-size: 11px;
+    width: 28px;
+    height: 22px;
+    font-size: 9px;
     border-radius: 6px;
+  }
+  .drill-date {
+    display: none;
   }
 }

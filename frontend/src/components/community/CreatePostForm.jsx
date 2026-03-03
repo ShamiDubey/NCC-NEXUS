@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaPaperPlane, FaPlus, FaRegImage, FaXmark } from "react-icons/fa6";
 
 const TABS = ["update", "event", "poll", "media"];
@@ -89,7 +90,7 @@ export default function CreatePostForm({ onClose, onSubmit, role = "cadet", init
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div className="community-modal-overlay" role="dialog" aria-modal="true" onClick={onClose}>
       <form className="community-modal-card community-create-card" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <div className="community-create-head">
@@ -99,6 +100,7 @@ export default function CreatePostForm({ onClose, onSubmit, role = "cadet", init
           </button>
         </div>
 
+        <div className="community-create-body">
         <div className="community-tab-row">
           {TABS.map((name) => (
             <button key={name} type="button" className={tab === name ? "active" : ""} onClick={() => setTab(name)}>
@@ -263,6 +265,7 @@ export default function CreatePostForm({ onClose, onSubmit, role = "cadet", init
         </div>
 
         {tags.length ? <p className="community-tag-preview">{tags.map((item) => `#${item}`).join(" ")}</p> : null}
+        </div>
 
         <div className="community-modal-actions">
           <button type="submit" className="community-post-submit">
@@ -273,4 +276,7 @@ export default function CreatePostForm({ onClose, onSubmit, role = "cadet", init
       </form>
     </div>
   );
+
+  if (typeof document === "undefined") return modalContent;
+  return createPortal(modalContent, document.body);
 }

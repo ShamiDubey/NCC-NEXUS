@@ -4,6 +4,7 @@
   padding-inline: clamp(8px, 1.6vw, 18px);
   box-sizing: border-box;
   position: relative;
+  --community-feed-max-width: 100%;
   --community-btn-start: #6473c2;
   --community-btn-end: #7382cc;
   --community-btn-shadow: rgba(100, 115, 194, 0.42);
@@ -62,6 +63,11 @@
   margin-bottom: 14px;
 }
 
+.community-hero > div:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
 .community-title-icon {
   width: 112px;
   height: 112px;
@@ -79,6 +85,9 @@
 }
 
 .community-logo-upload-btn {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
   border: 0;
   background: linear-gradient(135deg, var(--community-btn-start), var(--community-btn-end));
   color: #fff;
@@ -144,17 +153,21 @@
 }
 
 .community-new-btn {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
   border: 0;
   background: linear-gradient(135deg, var(--community-btn-start), var(--community-btn-end));
   color: #fff;
-  border-radius: 14px;
-  padding: 12px 22px;
-  font-size: 1.05rem;
+  border-radius: 12px;
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   box-shadow: 0 8px 20px var(--community-btn-shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -411,13 +424,24 @@
 .community-post-stack {
   display: grid;
   gap: 12px;
-  justify-items: center; /* keep each post or post-pair centred in the page */
+  justify-items: center;
+  width: 100%;
+  max-width: var(--community-feed-max-width);
+  margin: 0 auto;
+}
+
+.community-post-stack > * {
+  width: 100%;
 }
 
 .community-pinned-shell {
   padding: 0;
   border-color: rgba(229, 182, 31, 0.4);
   background: rgba(229, 182, 31, 0.08);
+  width: 100%;
+  max-width: var(--community-feed-max-width);
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .community-pinned-title {
@@ -1074,44 +1098,55 @@
 /* Pair wrapper so article + comments act as a centered unit. */
 .community-post-pair {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
   width: 100%;
+  max-width: var(--community-feed-max-width);
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
 .community-post-pair .community-post-card {
-  width: min(820px, 100%);
+  width: 100%;
+  max-width: var(--community-feed-max-width);
+  box-sizing: border-box;
   transition: transform 0.18s ease, width 0.28s ease;
 }
 
 /* When comments are closed keep the comment column collapsed so the post is centered. */
 .community-post-pair .community-comments {
-  width: 0;
-  max-width: 0;
+  width: 100%;
+  max-width: var(--community-feed-max-width);
+  max-height: 0;
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
-  transition: width 0.32s ease 0.18s, opacity 0.22s ease 0.18s, margin 0.24s ease;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: 0;
+  transition: max-height 0.3s ease, opacity 0.22s ease, margin 0.24s ease, padding 0.24s ease;
 }
 
 .community-post-pair.comments-open .community-comments {
-  width: 360px;
-  max-width: 360px;
+  max-height: 1200px;
   opacity: 1;
   pointer-events: auto;
+  margin-top: 12px;
+  padding-top: 12px;
+  padding-bottom: 16px;
+  border-top: 1px solid #e1e6ef;
   transition-delay: 0s;
 }
 
-/* Larger left shift so the post visibly moves before the comment pane expands */
 .community-post-pair.comments-open .community-post-card {
-  transform: translateX(-22px);
+  transform: none;
 }
 
 /* ensure centered combined width stays centered within page */
 .community-post-pair {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .community-reply-wrap {
@@ -1194,11 +1229,15 @@
 .community-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2300;
+  z-index: 11000;
+  --community-btn-start: #6473c2;
+  --community-btn-end: #7382cc;
+  --community-btn-shadow: rgba(100, 115, 194, 0.42);
   background: rgba(244, 246, 251, 0.66);
   backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
 }
 
@@ -1206,6 +1245,7 @@
   width: min(780px, 97vw);
   max-height: 92vh;
   overflow: auto;
+  margin: 0 auto;
   border: 1px solid #d2d8e2;
   border-radius: 16px;
   background: #fff;
@@ -1219,21 +1259,61 @@
   border-radius: 16px;
   background: #fff;
   font-family: "Inter", "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: min(92vh, 860px);
+  overflow: auto;
+}
+
+.community-create-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
 }
 
 .community-create-head {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .community-create-head h3 {
   font-size: 1.85rem;
-  color: #0d2342;
+  color: #1a237e;
+  text-align: center;
+  margin: 0;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.community-create-head h3::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 110px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #e53935 0%,
+    #e53935 33%,
+    #f5f7fb 33%,
+    #f5f7fb 66%,
+    #1a237e 66%,
+    #1a237e 100%
+  );
 }
 
 .community-create-close {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   border: 0;
   background: transparent;
   color: #1f2b3f;
@@ -1444,10 +1524,18 @@
 }
 
 .community-create-card .community-modal-actions {
-  margin-top: 14px;
+  margin-top: 12px;
+  z-index: 2;
+  background: #fff;
+  padding-top: 10px;
+  padding-bottom: 4px;
+  border-top: 1px solid #e2e7ef;
 }
 
 .community-post-submit {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   border: 0 !important;
   background: linear-gradient(135deg, var(--community-btn-start), var(--community-btn-end)) !important;
   color: #fff !important;
@@ -1629,6 +1717,10 @@
 
   .community-post-stack {
     gap: 10px;
+  }
+
+  .community-page {
+    --community-feed-max-width: 100%;
   }
 
   .community-pinned-title {
@@ -1918,6 +2010,86 @@
     padding: 10px 11px;
   }
 
+  .community-modal-overlay {
+    padding: 8px;
+  }
+
+  .community-create-card {
+    width: calc(100vw - 16px);
+    max-height: 92svh;
+    border-radius: 14px;
+    padding: 12px 10px 10px;
+  }
+
+  .community-create-head {
+    margin-bottom: 10px;
+  }
+
+  .community-create-head h3 {
+    font-size: 1.45rem;
+    padding-bottom: 8px;
+  }
+
+  .community-create-head h3::after {
+    width: 90px;
+    height: 2px;
+  }
+
+  .community-create-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .community-tab-row {
+    padding: 4px;
+    border-radius: 11px;
+    margin-top: 2px;
+  }
+
+  .community-tab-row button {
+    font-size: 1rem;
+    min-height: 38px;
+    padding: 0;
+  }
+
+  .community-create-textarea {
+    margin-top: 10px;
+    min-height: 124px;
+    border-radius: 12px;
+  }
+
+  .community-tag-row {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .community-tag-add-btn {
+    min-width: 74px;
+    min-height: 42px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+  }
+
+  .community-create-card .community-modal-actions {
+    margin-top: 10px;
+    padding-top: 8px;
+    padding-bottom: 2px;
+  }
+
+  .community-post-submit {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+    border-radius: 11px !important;
+    font-size: 1rem;
+    padding: 0 14px !important;
+  }
+
   .community-add-option-btn,
   .community-poll-date-input {
     min-height: 44px;
@@ -1988,5 +2160,52 @@
     min-height: 30px;
     font-size: 0.72rem;
     padding: 5px 8px;
+  }
+
+  .community-modal-overlay {
+    padding: 6px;
+  }
+
+  .community-create-card {
+    width: calc(100vw - 12px);
+    max-height: 93svh;
+    border-radius: 12px;
+    padding: 10px 8px 9px;
+  }
+
+  .community-create-head h3 {
+    font-size: 1.28rem;
+    padding-bottom: 7px;
+  }
+
+  .community-create-head h3::after {
+    width: 74px;
+  }
+
+  .community-tab-row button {
+    font-size: 0.92rem;
+    min-height: 34px;
+  }
+
+  .community-create-card input,
+  .community-create-card textarea {
+    font-size: 0.88rem;
+    padding: 9px 10px;
+    border-radius: 11px;
+  }
+
+  .community-create-textarea {
+    min-height: 108px;
+  }
+
+  .community-tag-add-btn {
+    min-height: 38px;
+    min-width: 68px;
+    font-size: 0.9rem;
+  }
+
+  .community-post-submit {
+    min-height: 38px;
+    font-size: 0.94rem;
   }
 }

@@ -1211,9 +1211,13 @@
 }
 
 @media (max-width: 850px) {
+  .cadet-dashboard .main.sidebar-open {
+    margin-left: 0;
+    width: 100vw;
+  }
   .cadet-dashboard .cadet-sidebar-backdrop {
-    left: var(--d-sidebar-w) !important;
-    width: calc(100vw - var(--d-sidebar-w)) !important;
+    left: 0 !important;
+    width: 100vw !important;
   }
 }
 
