@@ -17,6 +17,7 @@ import {
   Video,
   ClipboardCheck,
   Mic,
+  Heart,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,9 @@ import Chatbot from "./chatbot";
 import SuoAttendance from "./SuoAttendance";
 import MeetingListPage from "../Meetings/MeetingListPage";
 import MeetingCreatePage from "../Meetings/MeetingCreatePage";
+import MeetingDetailsPage from "../Meetings/MeetingDetailsPage";
+import PostMeetingReport from "../Meetings/PostMeetingReport";
+import MeetingRoomPage from "../Meetings/MeetingRoomPage";
 import MeetingDashboardSection from "../Meetings/MeetingDashboardSection";
 import { canCreateMeeting, getCurrentRole } from "../Meetings/meetingUtils";
 import { fetchMeetings } from "../../store/meetingSlice";
@@ -37,13 +41,14 @@ import { API_BASE_URL } from "../../api/config";
 import QuizModule from "../quiz/QuizModule";
 import VoiceCommandsModule from "../VoiceCommands/VoiceCommandsModule";
 import CommunityFeed from "../community/CommunityFeed";
+import SuoDonations from "../Donations/SuoDonations";
 import { clearAuthStorage, hasAuthFor } from "../../utils/authState";
 import { getStoredDashboardTab, persistDashboardTab } from "../../utils/dashboardState";
 import { resolveProfileImage } from "../../utils/profileImage";
 
 export default function SUODashboard() {
   const SUO_TAB_STORAGE_KEY = "suo_dashboard_active_tab";
-  const SUO_ALLOWED_TABS = ["profile", "feed", "chatbot", "attendance", "meetings", "quiz", "voice", "chat", "community"];
+  const SUO_ALLOWED_TABS = ["profile", "feed", "chatbot", "attendance", "meetings", "quiz", "voice", "chat", "community", "donations"];
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -237,6 +242,18 @@ export default function SUODashboard() {
   const role = getCurrentRole();
   const canCreate = canCreateMeeting(role);
 
+  // Meeting sub-view: "list" | "create" | "detail" | "report" | "room"
+  const [meetingView, setMeetingView] = useState("list");
+  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
+
+  const meetingNav = {
+    goToList: () => { setMeetingView("list"); setSelectedMeetingId(null); },
+    goToCreate: () => { setMeetingView("create"); },
+    goToDetail: (id) => { setSelectedMeetingId(id); setMeetingView("detail"); },
+    goToReport: (id) => { setSelectedMeetingId(id); setMeetingView("report"); },
+    goToRoom: (id) => { setSelectedMeetingId(id); setMeetingView("room"); },
+  };
+
   return (
     <>
       <div className="suo-dashboard">
@@ -314,6 +331,8 @@ export default function SUODashboard() {
                 <button
                   className={`nav-item ${activeTab === "meetings" ? "active" : ""}`}
                   onClick={() => {
+                    setMeetingView("list");
+                    setSelectedMeetingId(null);
                     setActiveTab("meetings");
                     dispatch(closeSUOSidebar());
                   }}
@@ -363,6 +382,17 @@ export default function SUODashboard() {
                 >
                   <Users size={18} />
                   <span>Community</span>
+                </button>
+
+                <button
+                  className={`nav-item ${activeTab === "donations" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("donations");
+                    dispatch(closeSUOSidebar());
+                  }}
+                >
+                  <Heart size={18} />
+                  <span>Donations</span>
                 </button>
 
                 <button
@@ -428,15 +458,52 @@ export default function SUODashboard() {
 
             {activeTab === "meetings" && (
               <div className="meeting-tab-shell">
-                <MeetingListPage embedded basePath="/meetings" hideCreateLink={canCreate} />
-                {canCreate ? (
+                {meetingView === "list" && (
+                  <MeetingListPage
+                    embedded
+                    basePath="/meetings"
+                    onViewDetails={meetingNav.goToDetail}
+                    onJoinRoom={meetingNav.goToRoom}
+                    onViewReport={meetingNav.goToReport}
+                    onCreateMeeting={meetingNav.goToCreate}
+                  />
+                )}
+                {meetingView === "create" && (
                   <MeetingCreatePage
                     embedded
                     basePath="/meetings"
-                    onCreated={() => dispatch(fetchMeetings())}
-                    onCancel={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onCreated={() => { dispatch(fetchMeetings()); meetingNav.goToList(); }}
+                    onCancel={meetingNav.goToList}
                   />
-                ) : null}
+                )}
+                {meetingView === "detail" && selectedMeetingId && (
+                  <MeetingDetailsPage
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onJoinRoom={meetingNav.goToRoom}
+                    onViewReport={meetingNav.goToReport}
+                  />
+                )}
+                {meetingView === "report" && selectedMeetingId && (
+                  <PostMeetingReport
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onViewDetails={meetingNav.goToDetail}
+                  />
+                )}
+                {meetingView === "room" && selectedMeetingId && (
+                  <MeetingRoomPage
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onViewDetails={meetingNav.goToDetail}
+                  />
+                )}
               </div>
             )}
 
@@ -445,6 +512,8 @@ export default function SUODashboard() {
             )}
 
             {activeTab === "community" && <CommunityFeed />}
+
+            {activeTab === "donations" && <SuoDonations />}
 
             {activeTab === "profile" && (
               <div className="profile-page">
@@ -507,11 +576,43 @@ export default function SUODashboard() {
                   </button>
                 </div>
 
+                {canCreate ? (
+                  <div className="suo-meeting-launch-card">
+                    <div className="suo-meeting-launch-icon">
+                      <Video size={22} />
+                    </div>
+                    <div className="suo-meeting-launch-info">
+                      <h3>Create Meeting</h3>
+                      <p>Schedule &amp; host video meetings with cadets</p>
+                    </div>
+                    <button
+                      className="suo-meeting-launch-btn"
+                      onClick={() => {
+                        setMeetingView("create");
+                        setActiveTab("meetings");
+                      }}
+                    >
+                      <Calendar size={15} />
+                      Schedule Now
+                    </button>
+                  </div>
+                ) : null}
+
                 <MeetingDashboardSection
                   sectionTitle="My Meetings"
                   mode="MY"
                   basePath="/meetings"
-                  onNavigate={() => setActiveTab("meetings")}
+                  onNavigate={(target) => {
+                    if (target === "create") {
+                      setMeetingView("create");
+                    } else {
+                      setMeetingView("list");
+                    }
+                    setActiveTab("meetings");
+                  }}
+                  onViewDetails={(id) => { setSelectedMeetingId(id); setMeetingView("detail"); setActiveTab("meetings"); }}
+                  onJoinRoom={(id) => { setSelectedMeetingId(id); setMeetingView("room"); setActiveTab("meetings"); }}
+                  onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
                 />
 
                 <div className="banner">
