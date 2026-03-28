@@ -13,6 +13,7 @@ import {
   Video,
   Camera,
   Users,
+  Heart,
 } from "lucide-react";
 import ChatLayout from "../ChatCommon/ChatLayout";
 import { useNavigate } from "react-router-dom";
@@ -22,8 +23,14 @@ import logoImage from "../assets/ncc-logo.png";
 import Feed from "./feed";
 import ResetPasswordModal from "./resetPassword";
 import MeetingListPage from "../Meetings/MeetingListPage";
+
+import MeetingDetailsPage from "../Meetings/MeetingDetailsPage";
+import PostMeetingReport from "../Meetings/PostMeetingReport";
+import MeetingRoomPage from "../Meetings/MeetingRoomPage";
 import MeetingDashboardSection from "../Meetings/MeetingDashboardSection";
+
 import CommunityFeed from "../community/CommunityFeed";
+import AlumniDonations from "../Donations/AlumniDonations";
 import { closeAlumniSidebar, toggleAlumniSidebar } from "../../features/ui/uiSlice";
 import { API_BASE_URL } from "../../api/config";
 import { clearAuthStorage, hasAuthFor } from "../../utils/authState";
@@ -32,7 +39,7 @@ import { resolveProfileImage } from "../../utils/profileImage";
 
 export default function AlumniDashboard() {
   const ALUMNI_TAB_STORAGE_KEY = "alumni_dashboard_active_tab";
-  const ALUMNI_ALLOWED_TABS = ["profile", "feed", "meetings", "chat", "community"];
+  const ALUMNI_ALLOWED_TABS = ["profile", "feed", "meetings", "chat", "community", "donations"];
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -228,6 +235,17 @@ const startEditBio = () => {
     persistDashboardTab(ALUMNI_TAB_STORAGE_KEY, activeTab);
   }, [activeTab]);
 
+  // Meeting sub-view: "list" | "create" | "detail" | "report" | "room"
+  const [meetingView, setMeetingView] = useState("list");
+  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
+
+  const meetingNav = {
+    goToList: () => { setMeetingView("list"); setSelectedMeetingId(null); },
+    goToDetail: (id) => { setSelectedMeetingId(id); setMeetingView("detail"); },
+    goToReport: (id) => { setSelectedMeetingId(id); setMeetingView("report"); },
+    goToRoom: (id) => { setSelectedMeetingId(id); setMeetingView("room"); },
+  };
+
   return (
     <>
       <div className="alumni-dashboard">
@@ -282,6 +300,8 @@ const startEditBio = () => {
                 <button
                   className={`nav-item ${activeTab === "meetings" ? "active" : ""}`}
                   onClick={() => {
+                    setMeetingView("list");
+                    setSelectedMeetingId(null);
                     setActiveTab("meetings");
                     dispatch(closeAlumniSidebar());
                   }}
@@ -310,6 +330,17 @@ const startEditBio = () => {
                 >
                   <Users size={18} />
                   <span>Community</span>
+                </button>
+
+                <button
+                  className={`nav-item ${activeTab === "donations" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("donations");
+                    dispatch(closeAlumniSidebar());
+                  }}
+                >
+                  <Heart size={18} />
+                  <span>Donations</span>
                 </button>
 
                 <button
@@ -358,7 +389,43 @@ const startEditBio = () => {
 
             {activeTab === "meetings" && (
               <div className="meeting-tab-shell">
-                <MeetingListPage embedded basePath="/meetings" />
+                {meetingView === "list" && (
+                  <MeetingListPage
+                    embedded
+                    basePath="/meetings"
+                    onViewDetails={meetingNav.goToDetail}
+                    onJoinRoom={meetingNav.goToRoom}
+                    onViewReport={meetingNav.goToReport}
+                  />
+                )}
+                {meetingView === "detail" && selectedMeetingId && (
+                  <MeetingDetailsPage
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onJoinRoom={meetingNav.goToRoom}
+                    onViewReport={meetingNav.goToReport}
+                  />
+                )}
+                {meetingView === "report" && selectedMeetingId && (
+                  <PostMeetingReport
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onViewDetails={meetingNav.goToDetail}
+                  />
+                )}
+                {meetingView === "room" && selectedMeetingId && (
+                  <MeetingRoomPage
+                    embedded
+                    basePath="/meetings"
+                    meetingIdProp={selectedMeetingId}
+                    onBack={meetingNav.goToList}
+                    onViewDetails={meetingNav.goToDetail}
+                  />
+                )}
               </div>
             )}
 
@@ -367,6 +434,10 @@ const startEditBio = () => {
             )}
 
             {activeTab === "community" && <CommunityFeed />}
+
+            {activeTab === "donations" && (
+              <AlumniDonations profileName={profileData.name} />
+            )}
 
             {activeTab === "profile" && (
               <div className="profile-page">
@@ -419,7 +490,18 @@ const startEditBio = () => {
                   </div>
                 </div>
 
-                <MeetingDashboardSection sectionTitle="Invited Meetings" mode="INVITED" basePath="/meetings" />
+                <MeetingDashboardSection
+                  sectionTitle="Invited Meetings"
+                  mode="INVITED"
+                  basePath="/meetings"
+                  onNavigate={() => {
+                    setMeetingView("list");
+                    setActiveTab("meetings");
+                  }}
+                  onViewDetails={(id) => { setSelectedMeetingId(id); setMeetingView("detail"); setActiveTab("meetings"); }}
+                  onJoinRoom={(id) => { setSelectedMeetingId(id); setMeetingView("room"); setActiveTab("meetings"); }}
+                  onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
+                />
 
                 <div className="banner">
                   <div className="banner-watermark">UNITY AND DISCIPLINE</div>

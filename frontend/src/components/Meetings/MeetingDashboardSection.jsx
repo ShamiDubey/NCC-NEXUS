@@ -1,22 +1,29 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import MeetingCard from "./MeetingCard";
+import { fetchMeetings } from "../../store/meetingSlice";
 import {
   MEETING_STATUS,
   canCreateMeeting,
+  getDashboardVisibleMeetings,
   getCurrentRole,
   getCurrentUser,
-  getVisibleMeetings,
 } from "./meetingUtils";
 import "./meetingModule.css";
 
-const MeetingDashboardSection = ({ sectionTitle = "Meetings", mode = "INVITED", basePath = "/meetings" }) => {
+const MeetingDashboardSection = ({ sectionTitle = "Meetings", mode = "INVITED", basePath = "/meetings", onNavigate, onViewDetails, onJoinRoom, onViewReport }) => {
+  const dispatch = useDispatch();
   const role = getCurrentRole();
   const user = getCurrentUser();
   const meetings = useSelector((state) => state.meetings.meetings);
   const participants = useSelector((state) => state.meetings.participants);
 
-  const visible = getVisibleMeetings(meetings, role, user.id);
+  useEffect(() => {
+    dispatch(fetchMeetings());
+  }, [dispatch]);
+
+  const visible = getDashboardVisibleMeetings(meetings, role, user.id);
   const liveMeeting = visible.find((meeting) => meeting.status === MEETING_STATUS.LIVE);
 
   const listByMode = {
@@ -37,20 +44,39 @@ const MeetingDashboardSection = ({ sectionTitle = "Meetings", mode = "INVITED", 
         <h2>{sectionTitle}</h2>
         <div className="meeting-dash-head-actions">
           {canCreateMeeting(role) ? (
-            <Link className="meeting-btn meeting-btn-primary" to={`${basePath}/create`}>
-              Create Meeting
-            </Link>
+            onNavigate ? (
+              <button type="button" className="meeting-btn meeting-btn-primary" onClick={() => onNavigate("create")}>
+                Create Meeting
+              </button>
+            ) : (
+              <Link className="meeting-btn meeting-btn-primary" to={`${basePath}/create`}>
+                Create Meeting
+              </Link>
+            )
           ) : null}
-          <Link className="meeting-btn meeting-btn-secondary" to={basePath}>
-            View All
-          </Link>
+          {onNavigate ? (
+            <button type="button" className="meeting-btn meeting-btn-secondary" onClick={() => onNavigate("list")}>
+              View All
+            </button>
+          ) : (
+            <Link className="meeting-btn meeting-btn-secondary" to={basePath}>
+              View All
+            </Link>
+          )}
         </div>
       </div>
 
       {liveMeeting ? (
         <div className="meeting-live-alert">
-          <strong>Live Meeting:</strong> {liveMeeting.title}
-          <Link to={`${basePath}/${liveMeeting.id}/room`}>Join Now</Link>
+          <div className="meeting-live-alert-content">
+            <span className="meeting-live-dot" />
+            <strong>Live Now:</strong> {liveMeeting.title}
+          </div>
+          {onJoinRoom ? (
+            <button type="button" className="meeting-btn meeting-btn-primary" onClick={() => onJoinRoom(liveMeeting.id)}>Join Now</button>
+          ) : (
+            <Link to={`${basePath}/${liveMeeting.id}/room`}>Join Now</Link>
+          )}
         </div>
       ) : null}
 
@@ -65,6 +91,10 @@ const MeetingDashboardSection = ({ sectionTitle = "Meetings", mode = "INVITED", 
               participants={participants[meeting.id] || []}
               detailsPath={`${basePath}/${meeting.id}`}
               roomPath={`${basePath}/${meeting.id}/room`}
+              reportPath={`${basePath}/${meeting.id}/report`}
+              onViewDetails={onViewDetails}
+              onJoinRoom={onJoinRoom}
+              onViewReport={onViewReport}
             />
           ))}
         </div>

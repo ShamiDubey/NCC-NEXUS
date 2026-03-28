@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
   Video,
@@ -54,6 +54,139 @@ const formatTextWithMentions = (text) => {
 
   return parts.length > 0 ? parts : text;
 };
+
+/* ===== REACTION BUTTON WITH LONG-PRESS PICKER ===== */
+const REACTION_EMOJIS = [
+  { key: "like", icon: "\u{1F44D}" },
+  { key: "love", icon: "\u{2764}\u{FE0F}" },
+  { key: "fire", icon: "\u{1F525}" },
+  { key: "clap", icon: "\u{1F44F}" },
+  { key: "laugh", icon: "\u{1F602}" },
+  { key: "wow", icon: "\u{1F62E}" },
+];
+const HOLD_MS = 500;
+
+function FeedReactButton({ liked, likeCount, onToggleLike, chosenEmoji, onPickEmoji }) {
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const holdTimer = React.useRef(null);
+  const didLongPress = React.useRef(false);
+  const wrapRef = React.useRef(null);
+
+  const activeEmoji = liked ? (chosenEmoji || "\u{2764}\u{FE0F}") : "\u{1F44D}";
+
+  const startHold = React.useCallback(() => {
+    didLongPress.current = false;
+    holdTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      setPickerOpen(true);
+    }, HOLD_MS);
+  }, []);
+
+  const cancelHold = React.useCallback(() => {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+    }
+  }, []);
+
+  const handleClick = React.useCallback(() => {
+    if (didLongPress.current) return;
+    onToggleLike();
+    if (!liked) onPickEmoji("\u{1F44D}");
+  }, [onToggleLike, liked, onPickEmoji]);
+
+  const pickReaction = React.useCallback((emoji) => {
+    setPickerOpen(false);
+    onPickEmoji(emoji);
+    if (!liked) onToggleLike();
+  }, [liked, onToggleLike, onPickEmoji]);
+
+  const handleContextMenu = React.useCallback((e) => {
+    e.preventDefault();
+    setPickerOpen(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!pickerOpen) return;
+    const close = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setPickerOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("touchstart", close);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("touchstart", close); };
+  }, [pickerOpen]);
+
+  return (
+    <div
+      className="feed-react-wrap"
+      ref={wrapRef}
+      onMouseDown={startHold}
+      onMouseUp={cancelHold}
+      onMouseLeave={cancelHold}
+      onTouchStart={startHold}
+      onTouchEnd={cancelHold}
+      onContextMenu={handleContextMenu}
+    >
+      <button
+        type="button"
+        className={`feed-action-btn${liked ? " liked" : ""}`}
+        onClick={handleClick}
+      >
+        <span className="feed-react-emoji">{activeEmoji}</span>
+        <span>{liked ? "Reacted" : "React"}</span>
+      </button>
+      {pickerOpen ? (
+        <div className="feed-reaction-picker">
+          {REACTION_EMOJIS.map((item) => (
+            <button key={item.key} type="button" onClick={() => pickReaction(item.icon)}>
+              {item.icon}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ===== LIKERS POPUP ===== */
+function LikersPopup({ likeCount, liked, profileName, onClose }) {
+  const popupRef = React.useRef(null);
+  const othersCount = liked ? likeCount - 1 : likeCount;
+
+  React.useEffect(() => {
+    const close = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) onClose();
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [onClose]);
+
+  return (
+    <div className="feed-likers-popup" ref={popupRef}>
+      <div className="feed-likers-header">
+        <span>Reactions</span>
+        <button type="button" onClick={onClose}>&times;</button>
+      </div>
+      <div className="feed-likers-list">
+        {liked && (
+          <div className="feed-liker-item">
+            <div className="feed-liker-avatar">{(profileName || "Y").charAt(0)}</div>
+            <span className="feed-liker-name">You</span>
+          </div>
+        )}
+        {othersCount > 0 && (
+          <div className="feed-liker-item">
+            <div className="feed-liker-avatar feed-liker-others">+{othersCount}</div>
+            <span className="feed-liker-name">{othersCount} other{othersCount !== 1 ? "s" : ""}</span>
+          </div>
+        )}
+        {likeCount === 0 && (
+          <p className="feed-likers-empty">No reactions yet</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 /* ===== RECURSIVE REPLY COMPONENT ===== */
 const ReplyItem = ({ reply, postId, commentId, profileName, formatTime, toggleReplyLike, deleteReply, setReplyingTo, replyingTo, replyText, setReplyText, addReply, depth = 0 }) => {
@@ -166,6 +299,8 @@ export default function Feed({
   const [commentSort, setCommentSort] = useState("newest"); // "newest" | "oldest"
   const [expandedReplies, setExpandedReplies] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  const [chosenEmojis, setChosenEmojis] = useState({});
+  const [likersPopupId, setLikersPopupId] = useState(null);
 
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -264,6 +399,7 @@ export default function Feed({
   };
 
   const openComments = async (post) => {
+    if (commentPost?.id === post.id) { setCommentPost(null); return; }
     setCommentPost(post);
 
     try {
@@ -402,20 +538,19 @@ export default function Feed({
       ? posts.filter((p) => p.name === profileName)
       : posts.filter((p) => p.name !== profileName);
 
-  const pinnedAnnouncements = posts
-    .filter((p) => p.name !== profileName)
-    .slice(0, 3);
+  const recentAnnouncements = [...visiblePosts]
+    .sort((a, b) => Number(b?.createdAt || 0) - Number(a?.createdAt || 0))
+    .slice(0, 5);
+  const timelinePosts = visiblePosts;
 
-  const getInitial = (name = "") => {
-    const trimmedName = String(name).trim();
-    return trimmedName ? trimmedName.charAt(0).toUpperCase() : "N";
-  };
+  const getInitial = (name = "") => String(name).trim().charAt(0).toUpperCase() || "N";
 
   const scrollToPost = (postId) => {
     const target = document.getElementById(`feed-post-${postId}`);
     if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+
 
   /* ================= CREATE POST (PROFILE ONLY) ================= */
   const createPost = async () => {
@@ -980,7 +1115,7 @@ export default function Feed({
   }, [posts]);
 
   return (
-    <div className="cadet-feed">
+    <div className="alumni-feed">
       {/* ================= EDIT POST MODAL ================= */}
       {editingPost && (
         <div className="edit-modal-overlay" onClick={() => setEditingPost(null)}>
@@ -1005,199 +1140,6 @@ export default function Feed({
         </div>
       )}
 
-      {/* ================= COMMENT MODAL ================= */}
-      {commentPost && (
-        <div className="edit-modal-overlay" onClick={() => setCommentPost(null)}>
-          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="edit-modal-header">
-              <h2>Comments</h2>
-              <div className="comment-header-actions">
-                <select
-                  className="comment-sort-select"
-                  value={commentSort}
-                  onChange={(e) => setCommentSort(e.target.value)}
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                </select>
-                <button className="edit-close-btn" onClick={() => setCommentPost(null)}>
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="comment-popup-list">
-              {getSortedComments(commentPost.comments)
-                .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
-                .map((c) => (
-                <div key={c.id} className={`comment-item-popup ${c.pinned ? "pinned-comment" : ""}`}>
-                  <div className="comment-header-row">
-                    <div className="comment-user-info">
-                      <b>{c.user}</b>
-                      {c.pinned && <Pin size={12} className="pinned-icon" />}
-                    </div>
-                    <span className="comment-time">{formatTime(c.createdAt)}</span>
-                  </div>
-                  
-                  {editingComment?.postId === commentPost.id && editingComment?.commentId === c.id ? (
-                    <div className="comment-edit-mode">
-                      <textarea
-                        className="comment-edit-textarea"
-                        value={editCommentText}
-                        onChange={(e) => setEditCommentText(e.target.value)}
-                      />
-                      <div className="comment-edit-actions">
-                        <button className="comment-save-btn" onClick={saveEditComment}>
-                          Save
-                        </button>
-                        <button className="comment-cancel-btn" onClick={() => {
-                          setEditingComment(null);
-                          setEditCommentText("");
-                        }}>
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p>{formatTextWithMentions(c.text)}</p>
-                  )}
-
-                  <div className="comment-actions">
-                    <span 
-                      className="comment-action-btn"
-                      onClick={() => toggleCommentLike(commentPost.id, c.id)}
-                    >
-                      <Heart size={14} fill={c.liked ? "red" : "none"} /> {c.likes}
-                    </span>
-
-                    <span 
-                      className="comment-action-btn"
-                      onClick={() => setReplyingTo(replyingTo?.commentId === c.id ? null : { postId: commentPost.id, commentId: c.id })}
-                    >
-                      <Reply size={14} /> Reply
-                    </span>
-
-                    {c.user === profileName && (
-                      <>
-                        <span
-                          className="comment-action-btn"
-                          onClick={() => editComment(commentPost.id, c.id)}
-                        >
-                          <Edit2 size={14} /> Edit
-                        </span>
-                        <span
-                          className="comment-delete"
-                          onClick={() => deleteComment(commentPost.id, c.id)}
-                        >
-                          Delete
-                        </span>
-                      </>
-                    )}
-
-                    {commentPost.name === profileName && (
-                      <span
-                        className="comment-action-btn"
-                        onClick={() => pinComment(commentPost.id, c.id)}
-                        title={c.pinned ? "Unpin comment" : "Pin comment"}
-                      >
-                        <Pin size={14} fill={c.pinned ? "#a6c34e" : "none"} />
-                      </span>
-                    )}
-
-                    {c.user !== profileName && (
-                      <span
-                        className="comment-action-btn"
-                        onClick={() => reportComment(commentPost.id, c.id)}
-                        title="Report comment"
-                      >
-                        <Flag size={14} />
-                      </span>
-                    )}
-                  </div>
-
-                  {/* View Replies Count */}
-                  {c.replies && c.replies.length > 0 && (
-                    <div className="view-replies-section">
-                      <button
-                        className="view-replies-btn"
-                        onClick={() => toggleReplies(c.id)}
-                      >
-                        {expandedReplies[c.id] ? (
-                          <>
-                            <ChevronUp size={14} /> Hide {getAllNestedRepliesCount(c.replies)} replies
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown size={14} /> View {getAllNestedRepliesCount(c.replies)} replies
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Nested Replies - Unlimited Nesting */}
-                  {c.replies && c.replies.length > 0 && expandedReplies[c.id] && (
-                    <div className="replies-container">
-                      {c.replies.map((reply) => (
-                        <ReplyItem
-                          key={reply.id}
-                          reply={reply}
-                          postId={commentPost.id}
-                          commentId={c.id}
-                          profileName={profileName}
-                          formatTime={formatTime}
-                          toggleReplyLike={toggleReplyLike}
-                          deleteReply={deleteReply}
-                          setReplyingTo={setReplyingTo}
-                          replyingTo={replyingTo}
-                          replyText={replyText}
-                          setReplyText={setReplyText}
-                          addReply={addReply}
-                          depth={0}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Reply Input for Comment */}
-                  {replyingTo?.commentId === c.id && !replyingTo?.replyId && (
-                    <div className="reply-input-container">
-                      <textarea
-                        className="reply-textarea"
-                        placeholder={`Reply to ${c.user}...`}
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                      />
-                      <div className="reply-actions">
-                        <button className="reply-send-btn" onClick={() => addReply(commentPost.id, c.id)}>
-                          Reply
-                        </button>
-                        <button className="reply-cancel-btn" onClick={() => {
-                          setReplyingTo(null);
-                          setReplyText("");
-                        }}>
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <textarea
-              className="edit-textarea"
-              placeholder="Write a comment..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-
-            <button className="edit-save-btn" onClick={addComment}>
-              Add Comment
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ================= FEED ================= */}
       <div className="feed-wrapper">
@@ -1299,10 +1241,37 @@ export default function Feed({
             />
           </div>
         )}
+        <aside className="feed-side-panel">
+          <h3 className="feed-side-title">Recent Posts</h3>
+          {recentAnnouncements.length === 0 ? (
+            <p className="feed-side-empty">No recent posts yet.</p>
+          ) : (
+            recentAnnouncements.map((announcement) => (
+              <div className="feed-side-item" key={`pinned-${announcement.id}`}>
+                <div className="feed-side-head">
+                  <div className="feed-side-avatar">{getInitial(announcement.name)}</div>
+                  <div className="feed-side-author">{announcement.name}</div>
+                  <span className="feed-side-tag">Recent</span>
+                </div>
+                <p className="feed-side-text">{announcement.text || "Shared an update."}</p>
+                <button
+                  type="button"
+                  className="feed-side-link"
+                  onClick={() => scrollToPost(announcement.id)}
+                >
+                  View post &rsaquo;
+                </button>
+              </div>
+            ))
+          )}
+        </aside>
+
+
 
         {/* ===== POSTS ===== */}
-        {visiblePosts.map((p) => (
+        {timelinePosts.map((p) => (
           <div className="feed-card" key={p.id} id={`feed-post-${p.id}`}>
+            <div className="feed-card-content">
             <div className="feed-card-header">
               <div className="feed-user">
                 <img
@@ -1314,7 +1283,7 @@ export default function Feed({
                     {p.name} <span className="feed-role">{p.role}</span>
                   </h3>
                   <p className="feed-meta">
-                    {formatTime(p.createdAt)} • PUBLIC FEED
+                    {formatTime(p.createdAt)} &bull; PUBLIC FEED
                   </p>
                 </div>
               </div>
@@ -1351,18 +1320,38 @@ export default function Feed({
               <span className="stat-item">
                 <Eye size={14} /> {p.views || 0} views
               </span>
+              {getPostLikeCount(p) > 0 ? (
+                <span
+                  className="stat-item feed-reactions-stat"
+                  onClick={() => setLikersPopupId(likersPopupId === p.id ? null : p.id)}
+                >
+                  <span className="feed-reaction-icons">
+                    {REACTION_EMOJIS
+                      .filter((_, i) => i === 0 || (chosenEmojis[p.id] && chosenEmojis[p.id] === REACTION_EMOJIS[i]?.icon))
+                      .slice(0, 3)
+                      .map((item, i) => (
+                        <span key={item.key} className="feed-reaction-icon-circle" style={{ zIndex: 3 - i }}>{item.icon}</span>
+                      ))}
+                  </span>
+                  {getPostLikeCount(p)} reactions
+                  {likersPopupId === p.id && (
+                    <LikersPopup likeCount={getPostLikeCount(p)} liked={p.liked} profileName={profileName} onClose={() => setLikersPopupId(null)} />
+                  )}
+                </span>
+              ) : null}
+              <span className="stat-item">
+                <MessageCircle size={14} /> {getPostCommentCount(p)} comments
+              </span>
             </div>
 
             <div className="feed-actions-row">
-              <button
-                type="button"
-                className="feed-action-btn"
-                onClick={() => toggleLike(p.id)}
-              >
-                <Heart size={16} fill={p.liked ? "red" : "none"} />
-                <span>Like</span>
-                <span className="feed-action-count">{getPostLikeCount(p)}</span>
-              </button>
+              <FeedReactButton
+                liked={p.liked}
+                likeCount={getPostLikeCount(p)}
+                onToggleLike={() => toggleLike(p.id)}
+                chosenEmoji={chosenEmojis[p.id]}
+                onPickEmoji={(emoji) => setChosenEmojis((prev) => ({ ...prev, [p.id]: emoji }))}
+              />
 
               <button
                 type="button"
@@ -1371,42 +1360,126 @@ export default function Feed({
               >
                 <MessageCircle size={16} />
                 <span>Comment</span>
-                <span className="feed-action-count">
-                  {getPostCommentCount(p)}
-                </span>
               </button>
             </div>
+            </div>{/* end feed-card-content */}
+
+            {commentPost?.id === p.id && (
+              <div className="feed-comment-panel">
+                <div className="comment-panel-header">
+                  <h3>Comments</h3>
+                  <div className="comment-panel-actions">
+                    <select
+                      className="comment-sort-select"
+                      value={commentSort}
+                      onChange={(e) => setCommentSort(e.target.value)}
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                    </select>
+                    <button className="comment-panel-close" onClick={() => setCommentPost(null)}>
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="comment-panel-list">
+                  {getSortedComments(p.comments)
+                    .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+                    .map((c) => (
+                    <div key={c.id} className={`comment-item-popup ${c.pinned ? "pinned-comment" : ""}`}>
+                      <div className="comment-header-row">
+                        <div className="comment-user-info">
+                          <b>{c.user}</b>
+                          {c.pinned && <Pin size={12} className="pinned-icon" />}
+                        </div>
+                        <span className="comment-time">{formatTime(c.createdAt)}</span>
+                      </div>
+
+                      {editingComment?.postId === p.id && editingComment?.commentId === c.id ? (
+                        <div className="comment-edit-mode">
+                          <textarea
+                            className="comment-edit-textarea"
+                            value={editCommentText}
+                            onChange={(e) => setEditCommentText(e.target.value)}
+                          />
+                          <div className="comment-edit-actions">
+                            <button className="comment-save-btn" onClick={saveEditComment}>Save</button>
+                            <button className="comment-cancel-btn" onClick={() => { setEditingComment(null); setEditCommentText(""); }}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p>{formatTextWithMentions(c.text)}</p>
+                      )}
+
+                      <div className="comment-actions">
+                        <span className="comment-action-btn" onClick={() => toggleCommentLike(p.id, c.id)}>
+                          <Heart size={14} fill={c.liked ? "red" : "none"} /> {c.likes}
+                        </span>
+                        <span className="comment-action-btn" onClick={() => setReplyingTo(replyingTo?.commentId === c.id ? null : { postId: p.id, commentId: c.id })}>
+                          <Reply size={14} /> Reply
+                        </span>
+                        {c.user === profileName && (
+                          <>
+                            <span className="comment-action-btn" onClick={() => editComment(p.id, c.id)}><Edit2 size={14} /> Edit</span>
+                            <span className="comment-delete" onClick={() => deleteComment(p.id, c.id)}>Delete</span>
+                          </>
+                        )}
+                        {p.name === profileName && (
+                          <span className="comment-action-btn" onClick={() => pinComment(p.id, c.id)} title={c.pinned ? "Unpin comment" : "Pin comment"}>
+                            <Pin size={14} fill={c.pinned ? "#a6c34e" : "none"} />
+                          </span>
+                        )}
+                        {c.user !== profileName && (
+                          <span className="comment-action-btn" onClick={() => reportComment(p.id, c.id)} title="Report comment">
+                            <Flag size={14} />
+                          </span>
+                        )}
+                      </div>
+
+                      {c.replies && c.replies.length > 0 && (
+                        <div className="view-replies-section">
+                          <button className="view-replies-btn" onClick={() => toggleReplies(c.id)}>
+                            {expandedReplies[c.id] ? (<><ChevronUp size={14} /> Hide {getAllNestedRepliesCount(c.replies)} replies</>) : (<><ChevronDown size={14} /> View {getAllNestedRepliesCount(c.replies)} replies</>)}
+                          </button>
+                        </div>
+                      )}
+
+                      {c.replies && c.replies.length > 0 && expandedReplies[c.id] && (
+                        <div className="replies-container">
+                          {c.replies.map((reply) => (
+                            <ReplyItem key={reply.id} reply={reply} postId={p.id} commentId={c.id} profileName={profileName} formatTime={formatTime} toggleReplyLike={toggleReplyLike} deleteReply={deleteReply} setReplyingTo={setReplyingTo} replyingTo={replyingTo} replyText={replyText} setReplyText={setReplyText} addReply={addReply} depth={0} />
+                          ))}
+                        </div>
+                      )}
+
+                      {replyingTo?.commentId === c.id && !replyingTo?.replyId && (
+                        <div className="reply-input-container">
+                          <textarea className="reply-textarea" placeholder={`Reply to ${c.user}...`} value={replyText} onChange={(e) => setReplyText(e.target.value)} />
+                          <div className="reply-actions">
+                            <button className="reply-send-btn" onClick={() => addReply(p.id, c.id)}>Reply</button>
+                            <button className="reply-cancel-btn" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Cancel</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="comment-panel-input">
+                  <textarea className="comment-panel-textarea" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} />
+                  <button className="comment-panel-send" onClick={addComment}>Post</button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
-        <aside className="feed-side-panel">
-          <h3 className="feed-side-title">Pinned Announcements</h3>
-          {pinnedAnnouncements.length === 0 ? (
-            <p className="feed-side-empty">No announcements yet.</p>
-          ) : (
-            pinnedAnnouncements.map((announcement) => (
-              <div className="feed-side-item" key={`pinned-${announcement.id}`}>
-                <div className="feed-side-head">
-                  <div className="feed-side-avatar">{getInitial(announcement.name)}</div>
-                  <div className="feed-side-author">{announcement.name}</div>
-                  <span className="feed-side-tag">Pinned</span>
-                </div>
-                <p className="feed-side-text">{announcement.text || "Shared an update."}</p>
-                <button
-                  type="button"
-                  className="feed-side-link"
-                  onClick={() => scrollToPost(announcement.id)}
-                >
-                  View post ›
-                </button>
-              </div>
-            ))
-          )}
-        </aside>
       </div>
     </div>
   );
 }
+
 
 
 

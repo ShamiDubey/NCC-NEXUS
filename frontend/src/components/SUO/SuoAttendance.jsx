@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Download, Plus, Trash2, ClipboardList, Check, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, Plus, Trash2, ClipboardList, Check, X, ChevronDown, ChevronUp, CalendarDays, Clock3 } from "lucide-react";
 import "./suoAttendance.css";
 import { attendanceApi } from "../../api/attendanceApi";
 import { leaveApi } from "../../api/leaveApi";
+import { fineApi } from "../../api/fineApi";
 
 const calculateAttendance = (attendance, totalDrills) => {
   const attended = attendance.filter((v) => v === "P").length;
@@ -33,6 +34,69 @@ const toDisplayDateTime = (value) => {
   }).format(dt);
 };
 
+const toDisplayDate = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return "--";
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(parsed);
+  }
+
+  const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    const [yyyy, mm, dd] = dateOnly.split("-");
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
+  return dateOnly;
+};
+
+const toDisplayTime = (timeValue, fallbackDateValue) => {
+  const fallbackRaw = String(fallbackDateValue || "");
+  const raw = String(timeValue || "").trim() || (fallbackRaw.includes("T") ? fallbackRaw.split("T")[1] || "" : "");
+  if (!raw) return "--";
+
+  const matched = raw.match(/(\d{2}):(\d{2})/);
+  if (!matched) return raw.slice(0, 5);
+
+  const hh = Number(matched[1]);
+  const mm = matched[2];
+  const suffix = hh >= 12 ? "PM" : "AM";
+  const hour = hh % 12 || 12;
+  return `${String(hour).padStart(2, "0")}:${mm} ${suffix}`;
+};
+
+const getDrillSortValue = (drill = {}) => {
+  const createdAt = new Date(drill.created_at || "").getTime();
+  if (!Number.isNaN(createdAt) && createdAt > 0) return createdAt;
+
+  const drillId = Number(drill.drill_id);
+  if (!Number.isNaN(drillId) && drillId > 0) return drillId;
+
+  const datePart = String(drill.drill_date || "").trim();
+  const timePart = String(drill.drill_time || "00:00:00").trim();
+  const normalizedTime = /^\d{2}:\d{2}$/.test(timePart) ? `${timePart}:00` : timePart;
+  const scheduledAt = new Date(`${datePart}T${normalizedTime}`).getTime();
+  return Number.isNaN(scheduledAt) ? 0 : scheduledAt;
+};
+
+const getLeaveStatusForCadetDrill = (leaveRequests, cadetRegimentalNo, drillId) => {
+  const normalizedCadetRegNo = String(cadetRegimentalNo || "");
+  const normalizedDrillId = String(drillId || "");
+  const found = leaveRequests.find((leave) => {
+    const leaveCadetRegNo = String(leave?.regimental_no || leave?.cadet_key || "");
+    const leaveDrillId = String(leave?.drill_id || "");
+    if (!leaveCadetRegNo || !leaveDrillId) return false;
+    return leaveCadetRegNo === normalizedCadetRegNo && leaveDrillId === normalizedDrillId;
+  });
+  return String(found?.status || "").toLowerCase();
+};
+
 const SuoAttendance = () => {
   const [activeView, setActiveView] = useState("attendance");
   const [sessionOptions, setSessionOptions] = useState([]);
@@ -43,6 +107,8 @@ const SuoAttendance = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fines, setFines] = useState([]);
+  const [verifyingPaymentId, setVerifyingPaymentId] = useState(null);
 
   const nextDrillDate = useMemo(() => {
     const today = new Date();
@@ -51,6 +117,15 @@ const SuoAttendance = () => {
     const dd = String(today.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd} 09:00`;
   }, []);
+  const pendingFineMap = useMemo(() => {
+    const map = new Map();
+    fines
+      .filter((fine) => fine.status === "pending")
+      .forEach((fine) => {
+        map.set(`${fine.regimental_no}:${fine.drill_id}`, Number(fine.amount || 0));
+      });
+    return map;
+  }, [fines]);
 
   const loadLeaveRequests = async () => {
     try {
@@ -89,6 +164,17 @@ const SuoAttendance = () => {
     }
   };
 
+  const loadFines = async () => {
+    try {
+      const res = await fineApi.getAll();
+      setFines(Array.isArray(res?.data?.data) ? res.data.data : []);
+    } catch (err) {
+      setFines([]);
+      const serverMessage = err?.response?.data?.message;
+      if (serverMessage) setError(serverMessage);
+    }
+  };
+
   const loadSessionDetail = async (sessionId) => {
     if (!sessionId) return;
     setLoading(true);
@@ -106,6 +192,7 @@ const SuoAttendance = () => {
   useEffect(() => {
     loadSessions();
     loadLeaveRequests();
+    loadFines();
   }, []);
 
   useEffect(() => {
@@ -140,6 +227,7 @@ const SuoAttendance = () => {
     try {
       await attendanceApi.deleteSession(selectedSessionId);
       await loadSessions();
+      await loadFines();
     } catch (err) {
       window.alert(err?.response?.data?.message || "Unable to delete session.");
     } finally {
@@ -189,9 +277,10 @@ const SuoAttendance = () => {
     }
   };
 
-  const toggleAttendance = async (cadetRegimentalNo, drillId, currentStatus) => {
-    const nextStatus = currentStatus === "P" ? "A" : "P";
+  const updateAttendanceStatus = async (cadetRegimentalNo, drillId, nextUiStatus) => {
+    const backendStatus = nextUiStatus === "P" ? "P" : "A";
     const prev = sessionDetail;
+
     const optimistic = {
       ...sessionDetail,
       cadets: sessionDetail.cadets.map((cadet) =>
@@ -200,17 +289,19 @@ const SuoAttendance = () => {
           : {
               ...cadet,
               attendance: sessionDetail.drills.map((drill, idx) =>
-                Number(drill.drill_id) === Number(drillId) ? nextStatus : cadet.attendance[idx]
+                Number(drill.drill_id) === Number(drillId) ? backendStatus : cadet.attendance[idx]
               ),
             }
       ),
     };
 
     setSessionDetail(optimistic);
+
     try {
       await attendanceApi.patchRecords({
-        updates: [{ drill_id: drillId, regimental_no: cadetRegimentalNo, status: nextStatus }],
+        updates: [{ drill_id: drillId, regimental_no: cadetRegimentalNo, status: backendStatus }],
       });
+      await loadFines();
     } catch (err) {
       setSessionDetail(prev);
       window.alert(err?.response?.data?.message || "Unable to update attendance.");
@@ -237,12 +328,54 @@ const SuoAttendance = () => {
     try {
       await leaveApi.reviewStatus(leaveId, { status });
       await loadLeaveRequests();
+      await loadFines();
     } catch (err) {
       window.alert(err?.response?.data?.message || "Unable to update leave status.");
     }
   };
 
-  const drills = sessionDetail?.drills || [];
+  const verifySubmittedPayment = async (fineId, paymentId, status) => {
+    setVerifyingPaymentId(paymentId);
+    try {
+      await fineApi.verify(fineId, { payment_id: paymentId, status });
+      await loadFines();
+      window.alert(`Payment ${status}.`);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to verify payment.");
+    } finally {
+      setVerifyingPaymentId(null);
+    }
+  };
+
+  const downloadFineReport = async () => {
+    try {
+      const response = await fineApi.report({ format: "csv" });
+      const blob = new Blob([response.data], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "fine_report.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to download fine report.");
+    }
+  };
+
+  // Keep newest drills first using created_at/drill_id/date-time; preserve original index for attendance mapping
+  const rawDrills = sessionDetail?.drills || [];
+  const sortedDrillEntries = rawDrills
+    .map((drill, originalIndex) => ({
+      drill,
+      originalIndex,
+      sortValue: getDrillSortValue(drill),
+    }))
+    .sort((a, b) => {
+      const delta = Number(b.sortValue || 0) - Number(a.sortValue || 0);
+      if (delta !== 0) return delta;
+      return b.originalIndex - a.originalIndex;
+    });
+  const drills = sortedDrillEntries.map((entry) => entry.drill);
   const cadets = sessionDetail?.cadets || [];
 
   if (loading && !sessionDetail) {
@@ -260,42 +393,48 @@ const SuoAttendance = () => {
       {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
 
       <div className="attendance-toolbar">
-        <button
-          className={`attendance-btn ${activeView === "attendance" ? "attendance-btn-primary" : "attendance-btn-secondary"}`}
-          onClick={() => setActiveView("attendance")}
-          type="button"
-        >
-          <ClipboardList size={18} />
-          <span>Attendance</span>
-        </button>
-        <button
-          className={`attendance-btn ${activeView === "leave" ? "attendance-btn-primary" : "attendance-btn-secondary"}`}
-          onClick={() => {
-            setActiveView("leave");
-            loadLeaveRequests();
-          }}
-          type="button"
-        >
-          <ClipboardList size={18} />
-          <span>View Leave</span>
-        </button>
+        <div className="attendance-toolbar-row">
+          <button
+            className={`attendance-btn ${activeView === "attendance" ? "attendance-btn-primary" : "attendance-btn-secondary"}`}
+            onClick={() => setActiveView("attendance")}
+            type="button"
+          >
+            <ClipboardList size={18} />
+            <span>Attendance</span>
+          </button>
+          <button
+            className={`attendance-btn ${activeView === "leave" ? "attendance-btn-primary" : "attendance-btn-secondary"}`}
+            onClick={() => {
+              setActiveView("leave");
+              loadLeaveRequests();
+            }}
+            type="button"
+          >
+            <ClipboardList size={18} />
+            <span>View Leave</span>
+          </button>
+
+          {activeView === "attendance" && (
+            <>
+              <label className="attendance-label">Session:</label>
+              <select
+                className="attendance-session-select"
+                value={selectedSessionId}
+                onChange={(e) => setSelectedSessionId(e.target.value)}
+                disabled={actionLoading || loading}
+              >
+                {sessionOptions.map((sessionName) => (
+                  <option key={sessionName.session_id} value={sessionName.session_id}>
+                    {sessionName.session_name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+        </div>
 
         {activeView === "attendance" && (
-          <>
-            <label className="attendance-label">Session:</label>
-            <select
-              className="attendance-session-select"
-              value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(e.target.value)}
-              disabled={actionLoading || loading}
-            >
-              {sessionOptions.map((sessionName) => (
-                <option key={sessionName.session_id} value={sessionName.session_id}>
-                  {sessionName.session_name}
-                </option>
-              ))}
-            </select>
-
+          <div className="attendance-toolbar-row">
             <button className="attendance-btn attendance-btn-secondary" onClick={createSession} disabled={actionLoading}>
               <Plus size={18} />
               <span>Add Session</span>
@@ -315,7 +454,7 @@ const SuoAttendance = () => {
               <Download size={18} />
               <span>Download Attendance</span>
             </button>
-          </>
+          </div>
         )}
       </div>
 
@@ -338,44 +477,80 @@ const SuoAttendance = () => {
                 <thead>
                   <tr>
                     <th className="col-cadet">Cadet Name</th>
-                    {drills.map((drill, drillIdx) => (
+                    {drills.map((drill, i) => (
                       <th key={drill.drill_id} className="col-drill">
-                        <div className="drill-head">
-                          <span>{drill.drill_name || `Drill ${drillIdx + 1}`}</span>
-                          <button
-                            className="drill-delete"
-                            onClick={() => removeDrill(drill.drill_id)}
-                            title="Remove Drill"
-                            aria-label={`Remove ${drill.drill_name || `Drill ${drillIdx + 1}`}`}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                        <div className="drill-card">
+                          <div className="drill-head">
+                            <span className="drill-title">{drill.drill_name || `Drill ${sortedDrillEntries[i].originalIndex + 1}`}</span>
+                            <button
+                              className="drill-delete"
+                              onClick={() => removeDrill(drill.drill_id)}
+                              title="Remove Drill"
+                              aria-label={`Remove ${drill.drill_name || `Drill ${sortedDrillEntries[i].originalIndex + 1}`}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="drill-meta-line">
+                            <CalendarDays size={12} />
+                            <span className="drill-meta-item">{toDisplayDate(drill.drill_date)}</span>
+                          </div>
+                          <div className="drill-meta-line">
+                            <Clock3 size={12} />
+                            <span className="drill-meta-item">{toDisplayTime(drill.drill_time, drill.drill_date)}</span>
+                          </div>
                         </div>
-                        <div className="drill-date">{`${drill.drill_date} ${String(drill.drill_time).slice(0, 5)}`}</div>
                       </th>
                     ))}
                     <th>Total Drills</th>
                     <th>Total Attendance</th>
                     <th>Percentage</th>
+                    <th>Total Fine</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cadets.map((cadet) => {
                     const { attended, total, percent } = calculateAttendance(cadet.attendance || [], drills.length);
+                    const totalFine = drills.reduce((sum, drill) => {
+                      const key = `${cadet.regimental_no}:${drill.drill_id}`;
+                      return sum + Number(pendingFineMap.get(key) || 0);
+                    }, 0);
                     return (
                       <tr key={cadet.regimental_no}>
                         <td className="cadet-name-cell">{cadet.name}</td>
-                        {drills.map((drill, drillIdx) => {
-                          const status = cadet.attendance?.[drillIdx] ?? null;
+                        {drills.map((drill, i) => {
+                          const rawStatus = cadet.attendance?.[sortedDrillEntries[i].originalIndex] ?? null;
+                          const leaveStatus = getLeaveStatusForCadetDrill(
+                            leaveRequests,
+                            cadet.regimental_no,
+                            drill.drill_id
+                          );
+                          const uiStatus =
+                            rawStatus === "P"
+                              ? "P"
+                              : rawStatus === "A"
+                              ? "A"
+                              : null;
+                          const leaveHint =
+                            leaveStatus === "approved"
+                              ? "Leave approved"
+                              : leaveStatus === "rejected"
+                              ? "Leave rejected - fine may apply"
+                              : "No approved leave - fine may apply";
                           return (
                             <td key={`${cadet.regimental_no}-${drill.drill_id}`}>
-                              {status ? (
-                                <button
-                                  className={`attendance-pill ${status === "P" ? "present" : "absent"}`}
-                                  onClick={() => toggleAttendance(cadet.regimental_no, drill.drill_id, status)}
+                              {uiStatus ? (
+                                <select
+                                  className={`attendance-status-select ${uiStatus === "P" ? "present" : "absent"}`}
+                                  value={uiStatus}
+                                  onChange={(e) =>
+                                    updateAttendanceStatus(cadet.regimental_no, drill.drill_id, e.target.value)
+                                  }
+                                  title={leaveHint}
                                 >
-                                  {status}
-                                </button>
+                                  <option value="P">P</option>
+                                  <option value="A">A</option>
+                                </select>
                               ) : (
                                 <span className="attendance-pill">--</span>
                               )}
@@ -385,12 +560,95 @@ const SuoAttendance = () => {
                         <td className="total-cell">{total}</td>
                         <td className="total-cell">{attended}</td>
                         <td className="total-cell">{percent}%</td>
+                        <td className="total-cell fine-cell">Rs. {totalFine.toFixed(2)}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             ) : null}
+          </div>
+
+          <div className="attendance-table-card leave-table-card" style={{ marginTop: 16 }}>
+            <div className="leave-head" style={{ marginBottom: 10 }}>
+              <span className="leave-cadet">Fine Management</span>
+              <button className="attendance-btn attendance-btn-secondary" onClick={downloadFineReport} type="button">
+                <Download size={16} />
+                <span>Download Fine Report</span>
+              </button>
+            </div>
+            <div className="leave-meta" style={{ marginBottom: 8 }}>
+              <span>Pending: {(fines || []).filter((f) => f.status === "pending").length}</span>
+              <span>Payment Submitted: {(fines || []).filter((f) => f.status === "payment_submitted").length}</span>
+              <span>Approved: {(fines || []).filter((f) => f.status === "paid").length}</span>
+            </div>
+            {(fines || []).length === 0 ? (
+              <p className="leave-empty-text">No fines found.</p>
+            ) : (
+              <div className="leave-list">
+                {(fines || []).map((fine) => {
+                const submittedPayment = (fine.payments || []).find((p) => p.payment_status === "submitted");
+                return (
+                  <div className="leave-row" key={fine.fine_id}>
+                    <div className="leave-main">
+                      <div className="leave-head">
+                        <span className="leave-cadet">{fine.cadet_name}</span>
+                        <span className="leave-regimental">({fine.regimental_no})</span>
+                        <span className={`leave-status-badge status-${fine.status}`}>
+                          {fine.workflow_status_label || fine.status}
+                        </span>
+                      </div>
+                      <p className="leave-reason">
+                        {fine.session_name} / {fine.drill_name} ({toDisplayDate(fine.drill_date)}) - Rs.{" "}
+                        {Number(fine.amount || 0).toFixed(2)}
+                      </p>
+                      <div className="leave-meta">
+                        <span>Created: {toDisplayDateTime(fine.created_at)}</span>
+                        <span>
+                          Payment Ref: {submittedPayment?.payment_ref || fine.latest_payment?.payment_ref || "N/A"}
+                        </span>
+                        {submittedPayment?.payment_proof_url || fine.latest_payment?.payment_proof_url ? (
+                          <a
+                            href={submittedPayment?.payment_proof_url || fine.latest_payment?.payment_proof_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View Proof
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                    {fine.status === "payment_submitted" && submittedPayment ? (
+                      <div className="leave-actions">
+                        <button
+                          type="button"
+                          className="leave-action-btn leave-approve"
+                          disabled={verifyingPaymentId === submittedPayment.payment_id}
+                          onClick={() =>
+                            verifySubmittedPayment(fine.fine_id, submittedPayment.payment_id, "verified")
+                          }
+                        >
+                          <Check size={16} />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="leave-action-btn leave-reject"
+                          disabled={verifyingPaymentId === submittedPayment.payment_id}
+                          onClick={() =>
+                            verifySubmittedPayment(fine.fine_id, submittedPayment.payment_id, "rejected")
+                          }
+                        >
+                          <X size={16} />
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+              </div>
+            )}
           </div>
         </div>
       ) : (

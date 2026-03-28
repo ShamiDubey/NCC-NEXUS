@@ -33,10 +33,12 @@ import MeetingListPage from "./components/Meetings/MeetingListPage";
 import MeetingCreatePage from "./components/Meetings/MeetingCreatePage";
 import MeetingDetailsPage from "./components/Meetings/MeetingDetailsPage";
 import MeetingRoomPage from "./components/Meetings/MeetingRoomPage";
+import PostMeetingReport from "./components/Meetings/PostMeetingReport";
 import QuizModule from "./components/quiz/QuizModule";
 import QuizLayout from "./components/quiz/QuizLayout";
 import Community from "./pages/Community";
 import CommunityFeed from "./components/community/CommunityFeed";
+import AnoDonationOverview from "./components/Donations/AnoDonationOverview";
 
 const App = () => {
   return (
@@ -68,6 +70,7 @@ const App = () => {
         <Route path="/meetings/create" element={<MeetingCreatePage />} />
         <Route path="/meetings/:meetingId" element={<MeetingDetailsPage />} />
         <Route path="/meetings/:meetingId/room" element={<MeetingRoomPage />} />
+        <Route path="/meetings/:meetingId/report" element={<PostMeetingReport />} />
         <Route path="/community" element={<Community />} />
 
         <Route
@@ -87,10 +90,12 @@ const App = () => {
           <Route path="ano-attendance" element={<AnoAttendance />} />
           <Route path="chat" element={<AnoChat />} />
           <Route path="community" element={<CommunityFeed />} />
+          <Route path="donations" element={<AnoDonationOverview />} />
           <Route path="meetings" element={<MeetingListPage basePath="/ano/meetings" />} />
           <Route path="meetings/create" element={<MeetingCreatePage basePath="/ano/meetings" />} />
           <Route path="meetings/:meetingId" element={<MeetingDetailsPage basePath="/ano/meetings" />} />
           <Route path="meetings/:meetingId/room" element={<MeetingRoomPage basePath="/ano/meetings" />} />
+          <Route path="meetings/:meetingId/report" element={<PostMeetingReport basePath="/ano/meetings" />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,21 +1,34 @@
-import { useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { addMeeting } from "../../store/meetingSlice";
-import { MEETING_STATUS, MEETING_TYPES, canCreateMeeting, getCurrentRole, getCurrentUser } from "./meetingUtils";
+import { ArrowLeft, Search, UserPlus, X, CheckCircle } from "lucide-react";
+import { createMeetingAsync } from "../../store/meetingSlice";
+import { API_BASE_URL } from "../../api/config";
+import { MEETING_TYPES, canCreateMeeting, getCurrentRole, getCurrentUser } from "./meetingUtils";
 import "./meetingModule.css";
 
-const buildId = () => `M-${Date.now()}`;
+const normalizeRoleLabel = (role = "") => {
+  const r = String(role).toUpperCase().trim();
+  if (r === "SENIOR UNDER OFFICER") return "SUO";
+  if (r === "CADET" || r === "SUO" || r === "ALUMNI" || r === "ANO") return r;
+  return r;
+};
 
-const MeetingCreatePage = ({ embedded = false, basePath = "/meetings" }) => {
+const toLocalDateTimeMin = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
+const MeetingCreatePage = ({ embedded = false, basePath = "/meetings", onCreated, onCancel }) => {
   const role = getCurrentRole();
   const currentUser = getCurrentUser();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const users = useSelector((state) => state.meetings.users).filter(
-    (user) => Number(user.id) !== Number(currentUser.id)
-  );
+  const [cadets, setCadets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   const [form, setForm] = useState({
     title: "",
@@ -28,16 +41,89 @@ const MeetingCreatePage = ({ embedded = false, basePath = "/meetings" }) => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [successPopup, setSuccessPopup] = useState(null);
+  const minDateTime = useMemo(() => toLocalDateTimeMin(), []);
 
   const roleAllowed = canCreateMeeting(role);
 
+  useEffect(() => {
+    if (!roleAllowed) return;
+
+    const token = localStorage.getItem("token");
+
+    const fetchFromAnoCadets = async () => {
+      const response = await fetch(`${API_BASE_URL}/api/ano/cadets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : [];
+      return list.map((cadet) => ({
+        id: Number(cadet.user_id),
+        name: cadet.name || "Unknown",
+        email: cadet.email || "",
+        unit: cadet.unit || "",
+        rank: cadet.rank || "",
+        role: normalizeRoleLabel(cadet.role),
+      })).filter((cadet) => Number.isInteger(cadet.id) && cadet.id > 0);
+    };
+
+    const fetchFromChatUsers = async () => {
+      const response = await fetch(`${API_BASE_URL}/api/chat/users/${currentUser.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const users = data?.data?.users || data?.users || [];
+      if (!Array.isArray(users)) return null;
+      return users.map((contact) => ({
+        id: Number(contact.peer_user_id),
+        name: contact.room_name || contact.participants?.[0]?.name || `User #${contact.peer_user_id}`,
+        email: "",
+        unit: "",
+        rank: "",
+        role: normalizeRoleLabel(contact.peer_role),
+      })).filter((user) => Number.isInteger(user.id) && user.id > 0);
+    };
+
+    const loadUsers = async () => {
+      try {
+        // ANO can use /api/ano/cadets; others use chat users endpoint.
+        let result = role === "ANO" ? await fetchFromAnoCadets() : null;
+        if (!result) {
+          result = await fetchFromChatUsers();
+        }
+        if (result && result.length > 0) {
+          setCadets(result);
+        } else {
+          setFetchError("No users found to invite.");
+        }
+      } catch {
+        setFetchError("Could not connect to server.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
+  }, [roleAllowed, currentUser.id, role]);
+
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const roleMatch = roleFilter === "ALL" ? true : user.role === roleFilter;
+    return cadets.filter((user) => {
+      const roleMatch = roleFilter === "ALL" || user.role === roleFilter;
       const searchMatch = user.name.toLowerCase().includes(search.toLowerCase());
       return roleMatch && searchMatch;
     });
-  }, [users, search, roleFilter]);
+  }, [cadets, search, roleFilter]);
+
+  const filteredUserIds = useMemo(
+    () => filteredUsers.map((user) => user.id),
+    [filteredUsers]
+  );
+
+  const allFilteredSelected =
+    filteredUserIds.length > 0 &&
+    filteredUserIds.every((id) => selectedUsers.includes(id));
 
   const isValid =
     form.title.trim().length > 1 &&
@@ -47,17 +133,37 @@ const MeetingCreatePage = ({ embedded = false, basePath = "/meetings" }) => {
     selectedUsers.length > 0;
 
   const toggleUser = (id) => {
+    const normalizedId = Number(id);
+    if (!Number.isInteger(normalizedId) || normalizedId <= 0) return;
+
     setSelectedUsers((prev) =>
-      prev.includes(id) ? prev.filter((userId) => userId !== id) : [...prev, id]
+      prev.includes(normalizedId)
+        ? prev.filter((userId) => userId !== normalizedId)
+        : [...prev, normalizedId]
     );
+  };
+
+  const removeUser = (id) => {
+    const normalizedId = Number(id);
+    setSelectedUsers((prev) => prev.filter((userId) => userId !== normalizedId));
+  };
+
+  const handleSelectAllFiltered = () => {
+    if (filteredUserIds.length === 0) return;
+
+    setSelectedUsers((prev) => {
+      if (allFilteredSelected) {
+        return prev.filter((id) => !filteredUserIds.includes(id));
+      }
+      return [...new Set([...prev, ...filteredUserIds])];
+    });
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!isValid || !roleAllowed) return;
 
-    const meeting = {
-      id: buildId(),
+    const payload = {
       title: form.title.trim(),
       description: form.description.trim(),
       dateTime: form.dateTime,
@@ -65,11 +171,26 @@ const MeetingCreatePage = ({ embedded = false, basePath = "/meetings" }) => {
       restricted: form.restricted,
       invitedUserIds: [currentUser.id, ...selectedUsers],
       createdBy: currentUser.id,
-      status: MEETING_STATUS.SCHEDULED,
     };
 
-    dispatch(addMeeting(meeting));
-    navigate(`${basePath}/${meeting.id}`);
+    dispatch(createMeetingAsync(payload))
+      .unwrap()
+      .then((created) => {
+        if (embedded) {
+          setForm({ title: "", description: "", dateTime: "", meetingType: "General", restricted: false });
+          setSelectedUsers([]);
+          setSearch("");
+          setRoleFilter("ALL");
+          setSuccessPopup(created?.title || "Meeting");
+        } else {
+          navigate(`${basePath}/${created.id}`);
+        }
+      })
+      .catch(() => {
+        if (!embedded) {
+          navigate(basePath);
+        }
+      });
   };
 
   if (!roleAllowed) {
@@ -85,117 +206,221 @@ const MeetingCreatePage = ({ embedded = false, basePath = "/meetings" }) => {
       <div className="meeting-page-head">
         <div>
           <h1>Create Meeting</h1>
-          <p>Configure schedule, type, and invite list.</p>
+          <p>Fill in the details below and select participants.</p>
         </div>
       </div>
 
-      <form className="meeting-create-form" onSubmit={handleSubmit}>
-        <div className="meeting-form-grid">
-          <label className="meeting-form-field">
-            <span>Title *</span>
-            <input
-              value={form.title}
-              onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-              placeholder="Enter meeting title"
-            />
-          </label>
-
-          <label className="meeting-form-field">
-            <span>Date & Time *</span>
-            <input
-              type="datetime-local"
-              value={form.dateTime}
-              onChange={(event) => setForm((prev) => ({ ...prev, dateTime: event.target.value }))}
-            />
-          </label>
-
-          <label className="meeting-form-field meeting-form-field-full">
-            <span>Description *</span>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              placeholder="Enter meeting description"
-            />
-          </label>
-
-          <label className="meeting-form-field">
-            <span>Meeting Type *</span>
-            <select
-              value={form.meetingType}
-              onChange={(event) => setForm((prev) => ({ ...prev, meetingType: event.target.value }))}
+      {successPopup && (
+        <div
+          className="meeting-popup-overlay"
+          onClick={() => {
+            setSuccessPopup(null);
+            if (onCreated) onCreated();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
+          <div className="meeting-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="meeting-popup-icon">
+              <CheckCircle size={48} />
+            </div>
+            <h2 className="meeting-popup-title">Meeting Created!</h2>
+            <p className="meeting-popup-desc">
+              <strong>"{successPopup}"</strong> has been scheduled successfully. All invited participants will be notified.
+            </p>
+            <button
+              type="button"
+              className="meeting-btn meeting-btn-primary meeting-popup-btn"
+              onClick={() => {
+                setSuccessPopup(null);
+                if (onCreated) onCreated();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
             >
-              {MEETING_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </label>
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
-          <label className="meeting-form-toggle">
-            <input
-              type="checkbox"
-              checked={form.restricted}
-              onChange={(event) => setForm((prev) => ({ ...prev, restricted: event.target.checked }))}
-            />
-            <span>Restricted Meeting</span>
-          </label>
+      <form onSubmit={handleSubmit}>
+        {/* Step 1: Meeting Details */}
+        <div className="meeting-create-card">
+          <div className="meeting-create-card-header">
+            <span className="meeting-step-badge">1</span>
+            <h3>Meeting Details</h3>
+          </div>
+
+          <div className="meeting-create-fields">
+            <label className="meeting-form-field meeting-form-field-full">
+              <span>Title</span>
+              <input
+                value={form.title}
+                onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
+                placeholder="e.g. Weekly Parade Briefing"
+              />
+            </label>
+
+            <label className="meeting-form-field">
+              <span>Date & Time</span>
+              <input
+                type="datetime-local"
+                value={form.dateTime}
+                min={minDateTime}
+                step="60"
+                onChange={(event) => setForm((prev) => ({ ...prev, dateTime: event.target.value }))}
+              />
+            </label>
+
+            <label className="meeting-form-field">
+              <span>Meeting Type</span>
+              <select
+                value={form.meetingType}
+                onChange={(event) => setForm((prev) => ({ ...prev, meetingType: event.target.value }))}
+              >
+                {MEETING_TYPES.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="meeting-form-field meeting-form-field-full">
+              <span>Description</span>
+              <textarea
+                rows={4}
+                value={form.description}
+                onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
+                placeholder="Describe the agenda and purpose of this meeting..."
+              />
+            </label>
+
+            <label className="meeting-form-toggle">
+              <input
+                type="checkbox"
+                checked={form.restricted}
+                onChange={(event) => setForm((prev) => ({ ...prev, restricted: event.target.checked }))}
+              />
+              <span>Restricted Meeting (invite-only access)</span>
+            </label>
+          </div>
         </div>
 
-        <section className="meeting-invite-selector">
-          <div className="meeting-invite-head">
-            <h3>Invite Users *</h3>
-            <div className="meeting-invite-filters">
+        {/* Step 2: Invite Users */}
+        <div className="meeting-create-card">
+          <div className="meeting-create-card-header">
+            <span className="meeting-step-badge">2</span>
+            <h3>Invite Participants</h3>
+            <span className="meeting-create-count">{selectedUsers.length} selected</span>
+          </div>
+
+          {/* Selected users chips */}
+          {selectedUsers.length > 0 ? (
+            <div className="meeting-create-selected">
+              {selectedUsers.map((id) => {
+                const user = cadets.find((item) => item.id === id);
+                if (!user) return null;
+                return (
+                  <span key={id} className="meeting-create-chip">
+                    {user.name}
+                    <button type="button" className="meeting-chip-remove" onClick={() => removeUser(id)}>
+                      <X size={12} />
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {/* Search and filter bar */}
+          <div className="meeting-create-search-bar">
+            <div className="meeting-search-input-wrap">
+              <Search size={16} />
               <input
-                placeholder="Search user"
+                placeholder="Search by name..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
-              <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
-                <option value="ALL">All Roles</option>
-                <option value="SUO">SUO</option>
-                <option value="CADET">Cadet</option>
-                <option value="ALUMNI">Alumni</option>
-                <option value="ANO">ANO</option>
-              </select>
             </div>
+            <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
+              <option value="ALL">All Roles</option>
+              <option value="SUO">SUO</option>
+              <option value="CADET">Cadet</option>
+              <option value="ALUMNI">Alumni</option>
+              <option value="ANO">ANO</option>
+            </select>
+            <button
+              type="button"
+              className="meeting-btn meeting-btn-secondary"
+              onClick={handleSelectAllFiltered}
+              disabled={filteredUserIds.length === 0}
+            >
+              {allFilteredSelected ? "Unselect All" : "Select All"}
+            </button>
           </div>
 
-          <div className="meeting-invite-selected">
-            {selectedUsers.length ? (
-              selectedUsers.map((id) => {
-                const user = users.find((item) => item.id === id);
-                if (!user) return null;
+          {/* User list */}
+          {loading ? (
+            <div className="meeting-empty">Loading registered cadets...</div>
+          ) : fetchError ? (
+            <div className="meeting-empty">{fetchError}</div>
+          ) : cadets.length === 0 ? (
+            <div className="meeting-empty">No registered cadets found.</div>
+          ) : (
+            <div className="meeting-create-user-list">
+              {filteredUsers.map((user) => {
+                const isSelected = selectedUsers.includes(user.id);
                 return (
-                  <span key={id} className="meeting-selected-chip">
-                    {user.name} ({user.role})
-                  </span>
+                  <div
+                    key={user.id}
+                    className={`meeting-create-user-row ${isSelected ? "selected" : ""}`}
+                    onClick={() => toggleUser(user.id)}
+                  >
+                    <div className="meeting-create-user-avatar">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="meeting-create-user-info">
+                      <strong>{user.name}</strong>
+                      {user.unit ? <span>{user.unit}</span> : null}
+                    </div>
+                    <span className="meeting-user-role">{user.role}</span>
+                    {isSelected ? (
+                      <span className="meeting-create-check">&#10003;</span>
+                    ) : (
+                      <UserPlus size={16} className="meeting-create-add-icon" />
+                    )}
+                  </div>
                 );
-              })
-            ) : (
-              <span className="meeting-empty-inline">No invited users selected</span>
-            )}
-          </div>
+              })}
+              {filteredUsers.length === 0 && cadets.length > 0 ? (
+                <div className="meeting-empty-inline">No users match your search.</div>
+              ) : null}
+            </div>
+          )}
+        </div>
 
-          <div className="meeting-invite-list">
-            {filteredUsers.map((user) => (
-              <label key={user.id} className="meeting-invite-row">
-                <input
-                  type="checkbox"
-                  checked={selectedUsers.includes(user.id)}
-                  onChange={() => toggleUser(user.id)}
-                />
-                <span className="meeting-user-name">{user.name}</span>
-                <span className="meeting-user-role">{user.role}</span>
-              </label>
-            ))}
-          </div>
-        </section>
-
-        <button className="meeting-btn meeting-btn-primary" type="submit" disabled={!isValid}>
-          Schedule Meeting
-        </button>
+        {/* Submit area */}
+        <div className="meeting-create-submit">
+          <button
+            type="button"
+            className="meeting-btn meeting-btn-secondary"
+            onClick={() => {
+              if (embedded && onCancel) {
+                setForm({ title: "", description: "", dateTime: "", meetingType: "General", restricted: false });
+                setSelectedUsers([]);
+                setSearch("");
+                setRoleFilter("ALL");
+                onCancel();
+              } else {
+                navigate(basePath);
+              }
+            }}
+          >
+            <ArrowLeft size={14} />
+            Cancel
+          </button>
+          <button className="meeting-btn meeting-btn-primary meeting-btn-lg" type="submit" disabled={!isValid}>
+            Schedule Meeting
+          </button>
+        </div>
       </form>
     </div>
   );

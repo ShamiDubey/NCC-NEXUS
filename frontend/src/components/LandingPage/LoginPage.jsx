@@ -1,16 +1,34 @@
 import { useState } from "react";
-import { FaMedal, FaLock, FaTimes } from "react-icons/fa";
+import { FaMedal, FaLock, FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { connectChatSocket, disconnectChatSocket } from "../../features/ui/socket";
 import { connectFeedSocket, disconnectFeedSocket } from "../../features/feed/feedSocket";
 import { connectNotificationSocket, disconnectNotificationSocket } from "../../features/notifications/notificationSocket";
 import nccLogo from "../assets/ncc-logo.png";
 
+const decodeJwtPayload = (token = "") => {
+  try {
+    const parts = String(token).split(".");
+    if (parts.length < 2) return null;
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
+        .join("")
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+};
+
 const LoginPage = ({ isModal = false, onClose }) => {
   const navigate = useNavigate();
   const [role, setRole] = useState("CADET");
   const [regimentalNo, setRegimentalNo] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -52,12 +70,17 @@ const LoginPage = ({ isModal = false, onClose }) => {
       }
 
       const token = data.token;
+      const tokenPayload = decodeJwtPayload(token);
+      const normalizedUser = {
+        ...(data.user || {}),
+        user_id: Number(data.user?.user_id || tokenPayload?.user_id || 0) || undefined,
+      };
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
-      localStorage.setItem("system_role", data.user?.role || "");
-      localStorage.setItem("rank", data.user?.rank || "");
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("system_role", normalizedUser?.role || "");
+      localStorage.setItem("rank", normalizedUser?.rank || "");
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
 
       // Connect all real-time channels immediately after login.
       connectChatSocket(token);
@@ -125,10 +148,10 @@ const LoginPage = ({ isModal = false, onClose }) => {
         </div>
 
         <div className="input-wrapper">
-          <div className="input-group has-icon">
+          <div className="password-box has-icon">
             <FaLock className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -140,6 +163,9 @@ const LoginPage = ({ isModal = false, onClose }) => {
               }}
               disabled={loading}
             />
+            <div className="password-eye" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </div>
           </div>
         </div>
 

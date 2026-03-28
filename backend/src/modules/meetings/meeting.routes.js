@@ -4,6 +4,7 @@ const router = express.Router();
 const { authenticate } = require("../../middlewares/auth.middleware");
 const {
   requireMeetingAuthority,
+  requireMeetingManager,
 } = require("../../middlewares/meetingAuth.middleware");
 
 const meetingController = require("./meeting.controller");
@@ -23,11 +24,24 @@ router.get(
   meetingController.listMeetings
 );
 
+// Get Meeting Details + Participants
+router.get(
+  "/:meetingId",
+  authenticate,
+  meetingController.getMeetingById
+);
+
+router.get(
+  "/:meetingId/jitsi-token",
+  authenticate,
+  meetingController.getJitsiToken
+);
+
 // Start Meeting
 router.patch(
   "/:meetingId/start",
   authenticate,
-  requireMeetingAuthority,
+  requireMeetingManager,
   meetingController.startMeeting
 );
 
@@ -42,7 +56,7 @@ router.post(
 router.get(
   "/:meetingId/waiting",
   authenticate,
-  requireMeetingAuthority,
+  requireMeetingManager,
   meetingController.getWaitingList
 );
 
@@ -50,7 +64,7 @@ router.get(
 router.patch(
   "/:meetingId/admit/:waitingId",
   authenticate,
-  requireMeetingAuthority,
+  requireMeetingManager,
   meetingController.admitUser
 );
 
@@ -58,7 +72,7 @@ router.patch(
 router.patch(
   "/:meetingId/reject/:waitingId",
   authenticate,
-  requireMeetingAuthority,
+  requireMeetingManager,
   meetingController.rejectUser
 );
 
@@ -66,7 +80,7 @@ router.patch(
 router.patch(
   "/:meetingId/end",
   authenticate,
-  requireMeetingAuthority,
+  requireMeetingManager,
   meetingController.endMeeting
 );
 
@@ -74,7 +88,6 @@ router.patch(
 router.get(
   "/:meetingId/report",
   authenticate,
-  requireMeetingAuthority,
   meetingController.getMeetingReport
 );
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./anoAttendance.css";
 import { attendanceApi } from "../../api/attendanceApi";
+import { fineApi } from "../../api/fineApi";
 
 function calculateAttendance(attArr) {
   const total = attArr.length;
@@ -15,6 +16,11 @@ const AnoAttendance = () => {
   const [sessionDetail, setSessionDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fineSummary, setFineSummary] = useState({
+    total_count: 0,
+    total_amount: 0,
+    by_status: { pending: 0, payment_submitted: 0, paid: 0, cancelled: 0 },
+  });
 
   const loadSessions = async (preferredSessionId = null) => {
     setLoading(true);
@@ -54,8 +60,30 @@ const AnoAttendance = () => {
     }
   };
 
+  const loadFineSummary = async () => {
+    try {
+      const res = await fineApi.getAll();
+      const rows = Array.isArray(res?.data?.data) ? res.data.data : [];
+      const summary = rows.reduce(
+        (acc, fine) => {
+          const amount = Number(fine.amount || 0);
+          acc.total_count += 1;
+          acc.total_amount += amount;
+          acc.by_status[fine.status] = (acc.by_status[fine.status] || 0) + 1;
+          return acc;
+        },
+        { total_count: 0, total_amount: 0, by_status: { pending: 0, payment_submitted: 0, paid: 0, cancelled: 0 } }
+      );
+      setFineSummary(summary);
+    } catch (err) {
+      const serverMessage = err?.response?.data?.message;
+      if (serverMessage) setError(serverMessage);
+    }
+  };
+
   useEffect(() => {
     loadSessions();
+    loadFineSummary();
   }, []);
 
   useEffect(() => {
@@ -78,7 +106,25 @@ const AnoAttendance = () => {
     }
   };
 
-  const drills = sessionDetail?.drills || [];
+  const handleFineReportDownload = async () => {
+    try {
+      const response = await fineApi.report({ format: "csv" });
+      const blob = new Blob([response.data], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "fine_report.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.alert(err?.response?.data?.message || "Unable to download fine report.");
+    }
+  };
+
+  // Reverse drills so newest appears first; build index map for attendance lookup
+  const rawDrills = sessionDetail?.drills || [];
+  const drillOrder = rawDrills.map((_, i) => i).reverse();
+  const drills = drillOrder.map((i) => rawDrills[i]);
   const cadets = sessionDetail?.cadets || [];
 
   return (
@@ -102,15 +148,27 @@ const AnoAttendance = () => {
         <button className="ano-attendance-btn ano-attendance-btn-primary" onClick={handleDownload}>
           Download Attendance
         </button>
+        <button className="ano-attendance-btn ano-attendance-btn-primary" onClick={handleFineReportDownload}>
+          Download Fine Report
+        </button>
+      </div>
+      <div className="ano-attendance-table-card" style={{ marginTop: 12 }}>
+        <h3>Fine Summary</h3>
+        <p>Total Fines: {fineSummary.total_count}</p>
+        <p>Total Amount: Rs. {Number(fineSummary.total_amount || 0).toFixed(2)}</p>
+        <p>Pending: {fineSummary.by_status.pending || 0}</p>
+        <p>Payment Submitted: {fineSummary.by_status.payment_submitted || 0}</p>
+        <p>Paid: {fineSummary.by_status.paid || 0}</p>
+        <p>Cancelled: {fineSummary.by_status.cancelled || 0}</p>
       </div>
       <div className="ano-attendance-table-card">
         <table className="ano-attendance-table">
           <thead>
             <tr>
               <th className="ano-col-cadet">Cadet Name</th>
-              {drills.map((drill, idx) => (
+              {drills.map((drill, i) => (
                 <th key={drill.drill_id} className="ano-col-drill">
-                  <div className="ano-drill-head">{drill.drill_name || `Drill ${idx + 1}`}</div>
+                  <div className="ano-drill-head">{drill.drill_name || `Drill ${drillOrder[i] + 1}`}</div>
                   <div className="ano-drill-date">{`${drill.drill_date} ${String(drill.drill_time).slice(0, 5)}`}</div>
                 </th>
               ))}
@@ -125,8 +183,8 @@ const AnoAttendance = () => {
               return (
                 <tr key={cadet.regimental_no}>
                   <td className="ano-cadet-name-cell">{cadet.name}</td>
-                  {drills.map((drill, drillIdx) => {
-                    const status = cadet.attendance?.[drillIdx] ?? null;
+                  {drills.map((drill, i) => {
+                    const status = cadet.attendance?.[drillOrder[i]] ?? null;
                     return (
                       <td key={`${cadet.regimental_no}-${drill.drill_id}`}>
                         {status ? (
