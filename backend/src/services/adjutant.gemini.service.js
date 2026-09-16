@@ -12,12 +12,31 @@ require("dotenv").config();
 
 const ADJUTANT_PROVIDER = "gemini";
 const ADJUTANT_MODEL =
-  process.env.ADJUTANT_GEMINI_MODEL || process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  process.env.ADJUTANT_GEMINI_MODEL || process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL_BASE =
   process.env.GEMINI_API_URL_BASE || "https://generativelanguage.googleapis.com/v1beta";
-const REQUEST_TIMEOUT_MS = Number(process.env.ADJUTANT_TIMEOUT_MS || 30000);
+const REQUEST_TIMEOUT_MS = Number(process.env.ADJUTANT_TIMEOUT_MS || 45000);
 const MAX_TOOL_ROUNDS = 4;
+// Transient Gemini failures (rate limit, overload, timeout) are retried with
+// backoff instead of surfacing straight to the officer as a 502.
+const MAX_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = Number(process.env.ADJUTANT_RETRY_DELAY_MS || 1200);
+
+// Free-tier quotas are PER MODEL, so when the primary's bucket is empty we can
+// fall back to a sibling model with its own untouched quota instead of failing.
+const FALLBACK_MODELS = (
+  process.env.ADJUTANT_GEMINI_FALLBACKS || "gemini-3.7-flash,gemini-3.5-flash-lite"
+)
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const MODEL_CHAIN = [ADJUTANT_MODEL, ...FALLBACK_MODELS.filter((m) => m !== ADJUTANT_MODEL)];
+// Sticky: remember which model last worked and start there, so an exhausted
+// primary isn't hammered on every call (and one turn's rounds stay on one model).
+let stickyModelIndex = 0;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const fetchWithTimeout = async (url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) => {
   const controller = new AbortController();
@@ -29,22 +48,30 @@ const fetchWithTimeout = async (url, options = {}, timeoutMs = REQUEST_TIMEOUT_M
   }
 };
 
-const extractErrorMessage = async (response) => {
+/** Extract the human message AND Google's advised retry delay (RetryInfo) from
+ *  a failed response — a 429 tells us exactly how long the quota window is. */
+const parseGeminiFailure = async (response) => {
   let bodyText = "";
   try {
     bodyText = await response.text();
   } catch {
     bodyText = "";
   }
-  if (!bodyText) return response.statusText || "Unknown error";
+  let message = bodyText || response.statusText || "Unknown error";
+  let retryDelayMs = null;
   try {
     const parsed = JSON.parse(bodyText);
-    if (typeof parsed?.error?.message === "string") return parsed.error.message;
-    if (typeof parsed?.message === "string") return parsed.message;
+    if (typeof parsed?.error?.message === "string") message = parsed.error.message;
+    else if (typeof parsed?.message === "string") message = parsed.message;
+    const retryInfo = (parsed?.error?.details || []).find(
+      (d) => typeof d?.retryDelay === "string"
+    );
+    const secs = retryInfo ? parseFloat(retryInfo.retryDelay) : NaN;
+    if (Number.isFinite(secs) && secs > 0) retryDelayMs = Math.ceil(secs * 1000);
   } catch {
     /* non-JSON payload */
   }
-  return bodyText;
+  return { message, retryDelayMs };
 };
 
 /**
@@ -77,37 +104,71 @@ function parseModelTurn(payload) {
 const callGemini = async ({ systemPrompt, contents, toolDeclarations }) => {
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured.");
 
-  const endpoint = `${GEMINI_API_URL_BASE}/models/${encodeURIComponent(
-    ADJUTANT_MODEL
-  )}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-
   const body = {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents,
-    generationConfig: { temperature: 0.3, maxOutputTokens: 900 },
+    // gemini-3.6+ are thinking models: thought tokens count against
+    // maxOutputTokens, so the cap must leave room for both thinking and answer.
+    generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
   };
   if (toolDeclarations?.length) {
     body.tools = [{ functionDeclarations: toolDeclarations }];
     body.toolConfig = { functionCallingConfig: { mode: "AUTO" } };
   }
+  const payload = JSON.stringify(body);
 
-  let response;
-  try {
-    response = await fetchWithTimeout(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  } catch (error) {
-    if (error?.name === "AbortError") throw new Error("Adjutant request timed out.");
-    throw error;
-  }
+  let lastError;
+  let quotaDelayMs = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    // Walk the model chain starting from the last model that worked.
+    for (let step = 0; step < MODEL_CHAIN.length; step += 1) {
+      const idx = (stickyModelIndex + step) % MODEL_CHAIN.length;
+      const model = MODEL_CHAIN[idx];
+      const endpoint = `${GEMINI_API_URL_BASE}/models/${encodeURIComponent(
+        model
+      )}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
 
-  if (!response.ok) {
-    const message = await extractErrorMessage(response);
-    throw new Error(`Gemini API error: ${message}`);
+      let response;
+      try {
+        response = await fetchWithTimeout(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        });
+      } catch (error) {
+        lastError =
+          error?.name === "AbortError" ? new Error("Adjutant request timed out.") : error;
+        console.error(`[adjutant] ${model} attempt ${attempt}: ${lastError.message}`);
+        continue; // timeout / network drop — try the next model
+      }
+
+      if (response.ok) {
+        if (idx !== stickyModelIndex) {
+          console.warn(`[adjutant] switched to fallback model ${model}`);
+          stickyModelIndex = idx;
+        }
+        return response.json();
+      }
+
+      const { message, retryDelayMs } = await parseGeminiFailure(response);
+      lastError = new Error(`Gemini API error (${response.status}): ${message}`);
+      console.error(
+        `[adjutant] ${model} attempt ${attempt} → HTTP ${response.status}: ${message}`
+      );
+      // Key problems no model can fix — fail fast.
+      if (response.status === 401 || response.status === 403) throw lastError;
+      // 429 quotas are per model — note the shortest advised wait, try siblings.
+      if (response.status === 429 && retryDelayMs) {
+        quotaDelayMs =
+          quotaDelayMs == null ? retryDelayMs : Math.min(quotaDelayMs, retryDelayMs);
+      }
+      // 400/404/429/5xx: fall through to the next model in the chain.
+    }
+    if (attempt < MAX_ATTEMPTS) {
+      await sleep(Math.min(quotaDelayMs ?? RETRY_BASE_DELAY_MS * attempt, 60000));
+    }
   }
-  return response.json();
+  throw lastError;
 };
 
 /**

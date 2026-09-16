@@ -10,7 +10,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 
 const client = axios.create({
   baseURL: `${API_BASE_URL}/api/adjutant`,
-  timeout: 45000, // a turn may include several model+tool rounds
+  // A turn may include several model+tool rounds on a thinking model, plus
+  // server-side retries on transient Gemini errors — give it real headroom.
+  timeout: 150000,
 });
 
 client.interceptors.request.use((config) => {
@@ -26,6 +28,9 @@ export const adjutantApi = {
   // Conversations (college-scoped, staff only).
   listConversations: () => client.get("/conversations"),
   createConversation: (title) => client.post("/conversations", title ? { title } : {}),
+  renameConversation: (conversationId, title) =>
+    client.patch(`/conversations/${conversationId}`, { title }),
+  deleteConversation: (conversationId) => client.delete(`/conversations/${conversationId}`),
   getMessages: (conversationId) => client.get(`/conversations/${conversationId}/messages`),
   // One officer turn — returns { user, assistant, proposals }.
   sendMessage: (conversationId, message) =>

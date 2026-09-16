@@ -24,8 +24,14 @@ import {
   CheckCircle2,
   XCircle,
   Clock3,
+  Mic,
+  Pencil,
+  Trash2,
+  Check,
+  X,
 } from "lucide-react";
 import { adjutantApi } from "../../api/adjutantApi";
+import MarkdownLite from "./MarkdownLite";
 import "./adjutantConsole.css";
 
 const TOOL_LABELS = {
@@ -42,6 +48,12 @@ const ACTION_LABELS = {
   scan_at_risk: "Run an at-risk scan",
   recompute_college: "Recompute college readiness",
 };
+
+// Browser dictation (Web Speech API). Absent → the mic button is not rendered.
+const SpeechRecognitionImpl =
+  typeof window !== "undefined"
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    : undefined;
 
 const QUICK_PROMPTS = [
   "Who is at risk right now, and why?",
@@ -118,7 +130,9 @@ function Message({ msg, proposals, onDecide, busyProposal }) {
         </div>
       )}
       <div className="aj-bubblecol">
-        <div className="aj-bubble">{msg.content}</div>
+        <div className={`aj-bubble${isUser ? "" : " aj-bubble-md"}`}>
+          {isUser ? msg.content : <MarkdownLite text={msg.content} />}
+        </div>
         {consulted.length > 0 && (
           <div className="aj-trace">
             <Wrench size={11} />
@@ -151,7 +165,11 @@ export default function AdjutantConsole() {
   const [sending, setSending] = useState(false);
   const [busyProposal, setBusyProposal] = useState(null);
   const [error, setError] = useState("");
+  const [listening, setListening] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
   const scrollRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const scrollToEnd = useCallback(() => {
     requestAnimationFrame(() => {
@@ -261,16 +279,91 @@ export default function AdjutantConsole() {
       } catch (err) {
         setMessages((prev) => prev.filter((m) => m.message_id !== optimistic.message_id));
         setDraft(clean); // give the officer their text back
+        const detail = err?.response?.data?.message;
         setError(
           err?.response?.status === 502
-            ? "The Adjutant is unreachable right now — your message was not lost, try again."
-            : err?.response?.data?.message || "Failed to send."
+            ? `The Adjutant is unreachable right now — your message was not lost, try again.${
+                detail ? ` (${detail})` : ""
+              }`
+            : detail || (err?.code === "ECONNABORTED" ? "The Adjutant took too long — try again." : "Failed to send.")
         );
       } finally {
         setSending(false);
       }
     },
     [activeId, sending, loadConversations, scrollToEnd]
+  );
+
+  // ── voice dictation ──
+  const toggleVoice = useCallback(() => {
+    if (!SpeechRecognitionImpl) return;
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+    const rec = new SpeechRecognitionImpl();
+    rec.lang = "en-IN";
+    rec.interimResults = false;
+    rec.continuous = false;
+    rec.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map((r) => r[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      if (transcript) setDraft((prev) => (prev ? `${prev} ${transcript}` : transcript));
+    };
+    rec.onerror = (e) => {
+      setListening(false);
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        setError("Microphone access was denied — allow it in the browser to dictate.");
+      }
+    };
+    rec.onend = () => setListening(false);
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  }, [listening]);
+
+  useEffect(() => () => recognitionRef.current?.abort?.(), []);
+
+  // ── rename / delete conversations ──
+  const startRename = useCallback((convo) => {
+    setEditingId(convo.conversation_id);
+    setEditTitle(convo.title || "");
+  }, []);
+
+  const commitRename = useCallback(async () => {
+    const id = editingId;
+    const clean = editTitle.trim();
+    setEditingId(null);
+    if (!id || !clean) return;
+    try {
+      const res = await adjutantApi.renameConversation(id, clean);
+      setConversations((prev) =>
+        prev.map((c) => (c.conversation_id === id ? res.data : c))
+      );
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to rename the conversation.");
+    }
+  }, [editingId, editTitle]);
+
+  const removeConversation = useCallback(
+    async (convo) => {
+      if (!window.confirm(`Delete "${convo.title}"? This cannot be undone from the UI.`)) return;
+      try {
+        await adjutantApi.deleteConversation(convo.conversation_id);
+        setConversations((prev) =>
+          prev.filter((c) => c.conversation_id !== convo.conversation_id)
+        );
+        if (activeId === convo.conversation_id) {
+          setActiveId(null);
+          setMessages([]);
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || "Failed to delete the conversation.");
+      }
+    },
+    [activeId]
   );
 
   const decide = useCallback(async (proposalId, decision) => {
@@ -327,16 +420,62 @@ export default function AdjutantConsole() {
             <Plus size={15} /> New conversation
           </button>
           <div className="aj-rail-list">
-            {conversations.map((c) => (
-              <button
-                key={c.conversation_id}
-                className={`aj-rail-item ${c.conversation_id === activeId ? "aj-active" : ""}`}
-                onClick={() => openConversation(c.conversation_id)}
-              >
-                <MessageSquare size={13} />
-                <span>{c.title}</span>
-              </button>
-            ))}
+            {conversations.map((c) =>
+              editingId === c.conversation_id ? (
+                <div key={c.conversation_id} className="aj-rail-item aj-rail-editing">
+                  <input
+                    className="aj-rail-rename"
+                    autoFocus
+                    value={editTitle}
+                    maxLength={255}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitRename();
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
+                  <button className="aj-rail-action" title="Save" onClick={commitRename}>
+                    <Check size={13} />
+                  </button>
+                  <button
+                    className="aj-rail-action"
+                    title="Cancel"
+                    onClick={() => setEditingId(null)}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  key={c.conversation_id}
+                  className={`aj-rail-item ${c.conversation_id === activeId ? "aj-active" : ""}`}
+                >
+                  <button
+                    className="aj-rail-open"
+                    onClick={() => openConversation(c.conversation_id)}
+                  >
+                    <MessageSquare size={13} />
+                    <span>{c.title}</span>
+                  </button>
+                  <span className="aj-rail-actions">
+                    <button
+                      className="aj-rail-action"
+                      title="Rename"
+                      onClick={() => startRename(c)}
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      className="aj-rail-action aj-rail-del"
+                      title="Delete"
+                      onClick={() => removeConversation(c)}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </span>
+                </div>
+              )
+            )}
             {conversations.length === 0 && (
               <p className="aj-rail-empty">No conversations yet.</p>
             )}
@@ -397,10 +536,25 @@ export default function AdjutantConsole() {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder='Ask the Adjutant — e.g. "who needs attention before the camp?"'
+              placeholder={
+                listening
+                  ? "Listening… speak your question"
+                  : 'Ask the Adjutant — e.g. "who needs attention before the camp?"'
+              }
               disabled={sending}
               maxLength={2000}
             />
+            {SpeechRecognitionImpl && (
+              <button
+                type="button"
+                className={`aj-mic ${listening ? "aj-mic-on" : ""}`}
+                onClick={toggleVoice}
+                disabled={sending}
+                title={listening ? "Stop dictation" : "Dictate your question"}
+              >
+                <Mic size={16} />
+              </button>
+            )}
             <button className="aj-send" type="submit" disabled={sending || !draft.trim()}>
               <SendHorizonal size={16} />
             </button>
