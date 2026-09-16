@@ -75,6 +75,24 @@ async function touchConversation(conversationId, { title } = {}) {
     .update({ updated_at: db.fn.now(), ...(title ? { title } : {}) });
 }
 
+async function renameConversation(conversationId, collegeId, title) {
+  const [row] = await db(CONVOS)
+    .where({ conversation_id: conversationId, college_id: collegeId })
+    .whereNull("deleted_at")
+    .update({ title, updated_at: db.fn.now() })
+    .returning("*");
+  return normalizeConvo(row);
+}
+
+/** Soft delete — the row (and its audit trail of messages/proposals) is kept. */
+async function softDeleteConversation(conversationId, collegeId) {
+  const count = await db(CONVOS)
+    .where({ conversation_id: conversationId, college_id: collegeId })
+    .whereNull("deleted_at")
+    .update({ deleted_at: db.fn.now(), updated_at: db.fn.now() });
+  return count > 0;
+}
+
 // ── Messages ──
 
 async function insertMessage({ conversationId, role, content, toolCalls }) {
@@ -160,6 +178,8 @@ module.exports = {
   listConversations,
   getConversation,
   touchConversation,
+  renameConversation,
+  softDeleteConversation,
   insertMessage,
   listMessages,
   insertProposal,

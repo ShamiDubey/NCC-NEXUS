@@ -63,6 +63,18 @@ async function getMessages({ collegeId, conversationId }) {
   return repo.listMessages(conversationId);
 }
 
+async function renameConversation({ collegeId, conversationId, title }) {
+  const clean = String(title || "").replace(/\s+/g, " ").trim();
+  if (!clean) throw createHttpError(400, "Title is required.");
+  await assertConversation(conversationId, collegeId);
+  return repo.renameConversation(conversationId, collegeId, clean.slice(0, 255));
+}
+
+async function deleteConversation({ collegeId, conversationId }) {
+  await assertConversation(conversationId, collegeId);
+  await repo.softDeleteConversation(conversationId, collegeId);
+}
+
 // ── The turn loop ──
 
 /**
@@ -109,8 +121,16 @@ async function sendMessage({ collegeId, userId, conversationId, text }) {
     });
   } catch (error) {
     // The user's prompt is already persisted; surface the failure as 502 so the
-    // UI can offer a retry without losing the conversation.
-    throw createHttpError(502, error?.message || "Adjutant is unavailable. Please retry.");
+    // UI can offer a retry without losing the conversation. The cause is logged
+    // server-side — check the backend terminal when officers report outages.
+    const raw = error?.message || "";
+    console.error(`[adjutant] turn failed for college ${collegeId}:`, raw);
+    const friendly = /\(429\)|quota|rate.?limit/i.test(raw)
+      ? "Gemini's free-tier rate limit was hit — wait about a minute and ask again. Each question uses several AI calls, so space them out or upgrade the Gemini plan."
+      : /timed out/i.test(raw)
+        ? "The AI took too long to answer — try again, or ask a narrower question."
+        : raw || "Adjutant is unavailable. Please retry.";
+    throw createHttpError(502, friendly);
   }
 
   const assistantMessage = await repo.insertMessage({
@@ -193,6 +213,8 @@ module.exports = {
   createConversation,
   listConversations,
   getMessages,
+  renameConversation,
+  deleteConversation,
   sendMessage,
   listProposals,
   decideProposal,

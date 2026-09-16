@@ -47,6 +47,38 @@ async function createConversation(req, res, next) {
   }
 }
 
+// PATCH /api/adjutant/conversations/:id { title }
+async function renameConversation(req, res, next) {
+  try {
+    const collegeId = requireCollege(req, res);
+    if (collegeId == null) return undefined;
+    const conversationId = positiveInt(req.params.id);
+    if (!conversationId) return res.status(400).json({ message: "Invalid conversation id" });
+    const convo = await service.renameConversation({
+      collegeId,
+      conversationId,
+      title: req.body?.title,
+    });
+    return res.json(convo);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// DELETE /api/adjutant/conversations/:id  (soft delete)
+async function deleteConversation(req, res, next) {
+  try {
+    const collegeId = requireCollege(req, res);
+    if (collegeId == null) return undefined;
+    const conversationId = positiveInt(req.params.id);
+    if (!conversationId) return res.status(400).json({ message: "Invalid conversation id" });
+    await service.deleteConversation({ collegeId, conversationId });
+    return res.status(204).end();
+  } catch (err) {
+    return next(err);
+  }
+}
+
 // GET /api/adjutant/conversations/:id/messages
 async function getMessages(req, res, next) {
   try {
@@ -113,6 +145,8 @@ const decide = (decision) => async (req, res, next) => {
 module.exports = {
   listConversations,
   createConversation,
+  renameConversation,
+  deleteConversation,
   getMessages,
   sendMessage,
   listProposals,

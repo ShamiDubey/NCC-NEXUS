@@ -94,15 +94,40 @@
 .aj-new-btn:hover { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(92, 107, 192, 0.3); }
 .aj-rail-list { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .aj-rail-item {
+  display: flex; align-items: center; gap: 2px;
+  border-radius: 9px; padding: 2px 4px 2px 0;
+  transition: background 0.2s ease;
+}
+.aj-rail-item:hover { background: rgba(92, 107, 192, 0.07); }
+.aj-rail-item.aj-active { background: rgba(92, 107, 192, 0.12); }
+.aj-rail-open {
+  flex: 1; min-width: 0;
   display: flex; align-items: center; gap: 8px;
   background: none; border: none; text-align: left;
-  border-radius: 9px; padding: 9px 10px;
+  padding: 9px 6px 9px 10px;
   font-family: var(--aj-font); font-size: 12.5px; color: var(--aj-text);
-  cursor: pointer; transition: background 0.2s ease;
+  cursor: pointer;
 }
-.aj-rail-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.aj-rail-item:hover { background: rgba(92, 107, 192, 0.07); }
-.aj-rail-item.aj-active { background: rgba(92, 107, 192, 0.12); font-weight: 600; }
+.aj-rail-open span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aj-rail-item.aj-active .aj-rail-open { font-weight: 600; }
+.aj-rail-actions { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
+.aj-rail-item:hover .aj-rail-actions,
+.aj-rail-item.aj-active .aj-rail-actions { display: inline-flex; }
+.aj-rail-action {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border: none; border-radius: 7px;
+  background: none; color: var(--aj-muted); cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.aj-rail-action:hover { background: rgba(92, 107, 192, 0.14); color: var(--aj-primary); }
+.aj-rail-action.aj-rail-del:hover { background: rgba(229, 57, 53, 0.1); color: #c62828; }
+.aj-rail-item.aj-rail-editing { padding: 4px 4px; gap: 4px; }
+.aj-rail-rename {
+  flex: 1; min-width: 0;
+  border: 1px solid var(--aj-primary); border-radius: 7px;
+  padding: 6px 8px; font-family: var(--aj-font); font-size: 12.5px;
+  color: var(--aj-text); outline: none; background: #fff;
+}
 .aj-rail-empty { font-size: 12px; color: var(--aj-muted); text-align: center; margin: 14px 0; }
 
 /* ── chat pane ── */
@@ -135,6 +160,25 @@
   background: linear-gradient(135deg, var(--aj-primary), var(--aj-navy));
   color: #fff; border: none;
 }
+
+/* ── markdown-lite inside bot bubbles ── */
+.aj-bubble-md { white-space: normal; }
+.aj-md > * { margin: 0 0 8px; }
+.aj-md > *:last-child { margin-bottom: 0; }
+.aj-md h4 { font-size: 13.5px; font-weight: 700; color: var(--aj-navy); }
+.aj-md ul, .aj-md ol { padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.aj-md ul { list-style: disc; }
+.aj-md ul ul { list-style: circle; margin-top: 5px; }
+.aj-md ol { list-style: decimal; }
+.aj-md li::marker { color: var(--aj-primary); }
+.aj-md code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  background: rgba(92, 107, 192, 0.1);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.aj-md strong { color: var(--aj-navy); }
 .aj-thinking { display: flex; align-items: center; gap: 9px; color: var(--aj-muted); }
 .aj-spin { animation: ajSpin 0.9s linear infinite; }
 
@@ -226,6 +270,22 @@
 }
 .aj-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(92, 107, 192, 0.3); }
 .aj-send:disabled { opacity: 0.55; cursor: default; }
+.aj-mic {
+  width: 44px; border: 1px solid var(--aj-border); border-radius: 12px;
+  background: #f7f8fc; color: var(--aj-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.aj-mic:hover:not(:disabled) { color: var(--aj-primary); border-color: var(--aj-primary); }
+.aj-mic:disabled { opacity: 0.55; cursor: default; }
+.aj-mic.aj-mic-on {
+  color: #c62828; border-color: #c62828; background: rgba(229, 57, 53, 0.06);
+  animation: ajMicPulse 1.4s ease-in-out infinite;
+}
+@keyframes ajMicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.25); }
+  50% { box-shadow: 0 0 0 6px rgba(229, 57, 53, 0); }
+}
 
 @keyframes ajSpin { to { transform: rotate(360deg); } }
 
