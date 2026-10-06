@@ -17,7 +17,7 @@ import { LoopOnce } from "three";
 
 // Bump MODEL_VERSION whenever the GLB files change — the query string makes
 // every browser (and CDN) fetch the new file instead of a stale cached copy.
-const MODEL_VERSION = 16;
+const MODEL_VERSION = 17;
 const MODEL_BY_GENDER = {
   male: `/models/cadets/male-cadet.glb?v=${MODEL_VERSION}`,
   female: `/models/cadets/female-cadet.glb?v=${MODEL_VERSION}`,
