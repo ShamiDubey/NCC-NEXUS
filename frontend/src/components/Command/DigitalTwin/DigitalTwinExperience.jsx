@@ -88,7 +88,7 @@ function InitSequence() {
   );
 }
 
-export default function DigitalTwinExperience({ embedded = false, gender = "male" }) {
+export default function DigitalTwinExperience({ embedded = false, gender }) {
   const params = useParams();
   const {
     reg,
@@ -102,6 +102,11 @@ export default function DigitalTwinExperience({ embedded = false, gender = "male
     reload,
     recompute,
   } = useTwinData(params.regimentalNo);
+
+  // Gender from the NCC regimental number itself: SW = Senior Wing (female),
+  // SD = Senior Division (male). Explicit prop still wins if ever provided.
+  const resolvedGender =
+    gender || (/^[A-Z]{2}\d{4}SW/i.test(reg || "") ? "female" : "male");
 
   const controlsRef = useRef(null);
   const [selected, setSelected] = useState(null);
@@ -173,7 +178,7 @@ export default function DigitalTwinExperience({ embedded = false, gender = "male
                 <Suspense fallback={<div className="dt-canvas-loading" />}>
                   <DigitalTwinScene
                     salute={saluteTick}
-                    gender={gender}
+                    gender={resolvedGender}
                     controlsRef={controlsRef}
                     onFallback={() => setGlbPending(true)}
                   />
