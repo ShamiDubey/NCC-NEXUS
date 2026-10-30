@@ -855,13 +855,30 @@
 .suo-dashboard .profile-card {
   background: var(--s-surface);
   border: 1px solid var(--s-border);
-  border-top: none;
-  border-radius: 0 0 18px 18px;
-  padding: 0 32px 40px;
+  border-radius: 18px;
+  padding: 32px 32px 40px;
   position: relative;
   animation: fadeSlideUp 0.6s ease 0.4s both;
   transition: all 0.4s ease;
   box-shadow: 0 4px 20px rgba(92, 107, 192, 0.06);
+}
+
+/* Quiz launch + Create Meeting side-by-side on desktop; "My Meetings" below
+   full-width since a list benefits from more room. The decorative duplicate
+   motto banner this card used to sit flush under was removed, so it now has
+   a full border on every side instead of a bottom-only one. */
+.suo-dashboard .overview-secondary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 860px) {
+  .suo-dashboard .overview-secondary-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .suo-dashboard .profile-card:hover {
@@ -1631,8 +1648,8 @@
     right: 16px;
   }
   .suo-dashboard .profile-card {
-    padding: 0 16px 24px;
-    border-radius: 0 0 14px 14px;
+    padding: 20px 16px 24px;
+    border-radius: 14px;
   }
   .suo-dashboard .profile-card-header {
     flex-direction: column;
@@ -1767,8 +1784,8 @@
     letter-spacing: 0.12em;
   }
   .suo-dashboard .profile-card {
-    padding: 0 12px 20px;
-    border-radius: 0 0 12px 12px;
+    padding: 16px 12px 20px;
+    border-radius: 12px;
   }
   .suo-dashboard .profile-photo-wrapper {
     margin-top: -36px;

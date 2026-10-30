@@ -634,10 +634,6 @@ const startEditBio = () => {
                   onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
                 />
 
-                <div className="banner">
-                  <div className="banner-watermark">UNITY AND DISCIPLINE</div>
-                </div>
-
                 <div className="profile-card">
                   <div className="profile-card-header">
                     <div className="profile-photo-wrapper">

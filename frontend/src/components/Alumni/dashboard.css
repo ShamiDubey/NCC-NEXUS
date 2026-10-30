@@ -806,9 +806,8 @@
 .alumni-dashboard .profile-card {
   background: var(--al-surface);
   border: 1px solid var(--al-border);
-  border-top: none;
-  border-radius: 0 0 18px 18px;
-  padding: 0 32px 28px;
+  border-radius: 18px;
+  padding: 32px 32px 28px;
   position: relative;
   animation: fadeSlideUp 0.6s ease 0.4s both;
   transition: all 0.4s ease;
@@ -1310,8 +1309,8 @@
     letter-spacing: 0.09em;
   }
   .alumni-dashboard .profile-card {
-    padding: 0 14px 16px;
-    border-radius: 0 0 14px 14px;
+    padding: 20px 14px 16px;
+    border-radius: 14px;
   }
   .alumni-dashboard .profile-card-header {
     flex-direction: row;
@@ -1428,7 +1427,7 @@
     padding: 0 10px 18px;
   }
   .alumni-dashboard .profile-card {
-    padding: 0 12px 14px;
+    padding: 16px 12px 14px;
   }
   .alumni-dashboard .profile-card-header {
     gap: 10px;

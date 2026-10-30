@@ -718,28 +718,26 @@ const [isEditingBio, setIsEditingBio] = useState(false);
                 </div>
               </div>
 
-              <div className="cadet-quiz-launch-card">
-                <div>
-                  <h3>Quiz &amp; Mock Tests</h3>
-                  <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
+              <div className="overview-secondary-row">
+                <div className="cadet-quiz-launch-card">
+                  <div>
+                    <h3>Quiz &amp; Mock Tests</h3>
+                    <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
+                  </div>
+                  <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
+                    Start Quiz
+                  </button>
                 </div>
-                <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
-                  Start Quiz
-                </button>
-              </div>
 
-              <MeetingDashboardSection
-                sectionTitle="Invited Meetings"
-                mode="INVITED"
-                basePath="/meetings"
-                onNavigate={() => { setMeetingView("list"); setActiveTab("meetings"); }}
-                onViewDetails={(id) => { setSelectedMeetingId(id); setMeetingView("detail"); setActiveTab("meetings"); }}
-                onJoinRoom={(id) => { setSelectedMeetingId(id); setMeetingView("room"); setActiveTab("meetings"); }}
-                onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
-              />
-
-              <div className="banner">
-                <div className="banner-watermark">UNITY AND DISCIPLINE</div>
+                <MeetingDashboardSection
+                  sectionTitle="Invited Meetings"
+                  mode="INVITED"
+                  basePath="/meetings"
+                  onNavigate={() => { setMeetingView("list"); setActiveTab("meetings"); }}
+                  onViewDetails={(id) => { setSelectedMeetingId(id); setMeetingView("detail"); setActiveTab("meetings"); }}
+                  onJoinRoom={(id) => { setSelectedMeetingId(id); setMeetingView("room"); setActiveTab("meetings"); }}
+                  onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
+                />
               </div>
 
               <div className="profile-card">

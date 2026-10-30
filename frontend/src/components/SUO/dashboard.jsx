@@ -702,37 +702,39 @@ export default function SUODashboard() {
                   </div>
                 </div>
 
-                <div className="cadet-quiz-launch-card">
-                  <div>
-                    <h3>Quiz &amp; Mock Tests</h3>
-                    <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
-                  </div>
-                  <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
-                    Start Quiz
-                  </button>
-                </div>
-
-                {canCreate ? (
-                  <div className="suo-meeting-launch-card">
-                    <div className="suo-meeting-launch-icon">
-                      <Video size={22} />
+                <div className="overview-secondary-row">
+                  <div className="cadet-quiz-launch-card">
+                    <div>
+                      <h3>Quiz &amp; Mock Tests</h3>
+                      <p>Attempt NCC Practice &amp; Exam Mode Tests</p>
                     </div>
-                    <div className="suo-meeting-launch-info">
-                      <h3>Create Meeting</h3>
-                      <p>Schedule &amp; host video meetings with cadets</p>
-                    </div>
-                    <button
-                      className="suo-meeting-launch-btn"
-                      onClick={() => {
-                        setMeetingView("create");
-                        setActiveTab("meetings");
-                      }}
-                    >
-                      <Calendar size={15} />
-                      Schedule Now
+                    <button className="quiz-btn-primary" onClick={() => setActiveTab("quiz")}>
+                      Start Quiz
                     </button>
                   </div>
-                ) : null}
+
+                  {canCreate ? (
+                    <div className="suo-meeting-launch-card">
+                      <div className="suo-meeting-launch-icon">
+                        <Video size={22} />
+                      </div>
+                      <div className="suo-meeting-launch-info">
+                        <h3>Create Meeting</h3>
+                        <p>Schedule &amp; host video meetings with cadets</p>
+                      </div>
+                      <button
+                        className="suo-meeting-launch-btn"
+                        onClick={() => {
+                          setMeetingView("create");
+                          setActiveTab("meetings");
+                        }}
+                      >
+                        <Calendar size={15} />
+                        Schedule Now
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
 
                 <MeetingDashboardSection
                   sectionTitle="My Meetings"
@@ -750,10 +752,6 @@ export default function SUODashboard() {
                   onJoinRoom={(id) => { setSelectedMeetingId(id); setMeetingView("room"); setActiveTab("meetings"); }}
                   onViewReport={(id) => { setSelectedMeetingId(id); setMeetingView("report"); setActiveTab("meetings"); }}
                 />
-
-                <div className="banner">
-                  <span className="banner-watermark">UNITY AND DISCIPLINE</span>
-                </div>
 
                 <div className="profile-card">
                   <div className="profile-card-header">
