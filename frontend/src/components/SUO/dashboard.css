@@ -868,9 +868,10 @@
    motto banner this card used to sit flush under was removed, so it now has
    a full border on every side instead of a bottom-only one.
    align-items: stretch (the grid default) makes both cards match the row's
-   tallest height instead of leaving a blank gap under the shorter one —
-   each card's own flex centering keeps its content vertically centered in
-   the extra space instead of stuck at the top. */
+   tallest height instead of leaving a blank gap under the shorter one, and
+   both cards' content is top-aligned (not centered) so their headings line
+   up with each other at the same y-position — matching top edges is what
+   actually reads as "equal," not just equal outer height. */
 .suo-dashboard .overview-secondary-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -882,6 +883,7 @@
 .suo-dashboard .overview-secondary-row .suo-meeting-launch-card {
   margin-bottom: 0;
   height: 100%;
+  align-items: flex-start;
 }
 
 @media (max-width: 860px) {
