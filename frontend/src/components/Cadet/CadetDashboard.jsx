@@ -563,7 +563,7 @@ const [isEditingBio, setIsEditingBio] = useState(false);
 
               {notifOpen && (
                 <div className="topbar-notif-dropdown">
-                  <NotificationPanel />
+                  <NotificationPanel onUnreadChange={setUnreadCount} />
                 </div>
               )}
             </div>

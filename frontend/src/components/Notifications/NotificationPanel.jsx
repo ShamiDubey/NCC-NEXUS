@@ -4,12 +4,20 @@ import { connectNotificationSocket, getNotificationSocket } from "../../features
 import { API_BASE_URL } from "../../api/config";
 import "./notificationPanel.css";
 
-const NotificationPanel = () => {
+const NotificationPanel = ({ onUnreadChange } = {}) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
+
+  // Let the parent dashboard shell (which renders its own, separate badge
+  // on the bell icon) stay in sync with this panel's real unread count —
+  // covers the initial fetch, new socket notifications, "mark all read"
+  // and single-item clicks, all through one place.
+  useEffect(() => {
+    onUnreadChange?.(unreadCount);
+  }, [unreadCount, onUnreadChange]);
 
   const sortedNotifications = useMemo(() => {
     return [...notifications].sort(
@@ -82,6 +90,25 @@ const NotificationPanel = () => {
     }
   };
 
+  const markOneRead = (notificationId) => {
+    const target = notifications.find((item) => item.notification_id === notificationId);
+    if (!target || target.is_read) return; // already read — no-op, no request
+
+    setNotifications((prev) =>
+      prev.map((item) =>
+        item.notification_id === notificationId ? { ...item, is_read: true } : item
+      )
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    if (token) {
+      fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+  };
+
   const formatTime = (dateStr) => {
     if (!dateStr) return "Just now";
     const d = new Date(dateStr);
@@ -125,6 +152,13 @@ const NotificationPanel = () => {
             <div
               key={item.notification_id}
               className={`notif-item ${item.is_read ? "" : "notif-item-unread"}`}
+              onClick={() => markOneRead(item.notification_id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") markOneRead(item.notification_id);
+              }}
+              title={item.is_read ? undefined : "Mark as read"}
             >
               <div className="notif-dot" />
               <div className="notif-item-content">
