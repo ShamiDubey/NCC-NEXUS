@@ -143,6 +143,12 @@ function leaveMeetingRoom(meetingId) {
   socket.emit("meeting:leaveRoom", { meetingId: normalizedMeetingId });
 }
 
+function emitToggleBriefing(meetingId) {
+  const normalizedMeetingId = normalizeMeetingId(meetingId);
+  if (!socket || !Number.isInteger(normalizedMeetingId) || normalizedMeetingId <= 0) return;
+  socket.emit("meeting:toggleBriefing", { meetingId: normalizedMeetingId });
+}
+
 function bindMeetingSocketEvents(handlers = {}) {
   if (!socket) return;
 
@@ -155,6 +161,7 @@ function bindMeetingSocketEvents(handlers = {}) {
     onHostDisconnected,
     onHostReconnected,
     onMeetingEnded,
+    onBriefingMode,
   } = handlers;
 
   if (onMeetingStarted) {
@@ -196,6 +203,11 @@ function bindMeetingSocketEvents(handlers = {}) {
     socket.off("meeting:ended", onMeetingEnded);
     socket.on("meeting:ended", onMeetingEnded);
   }
+
+  if (onBriefingMode) {
+    socket.off("meeting:briefing_mode", onBriefingMode);
+    socket.on("meeting:briefing_mode", onBriefingMode);
+  }
 }
 
 export {
@@ -211,5 +223,6 @@ export {
   emitRead,
   joinMeetingRoom,
   leaveMeetingRoom,
+  emitToggleBriefing,
   bindMeetingSocketEvents,
 };

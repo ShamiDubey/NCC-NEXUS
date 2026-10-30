@@ -323,8 +323,21 @@ const [isEditingBio, setIsEditingBio] = useState(false);
   }, []);
 
   const markAllReadLocal = () => {
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.notification_id);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
+
+    const token = localStorage.getItem("token");
+    if (token && unreadIds.length) {
+      Promise.allSettled(
+        unreadIds.map((id) =>
+          fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+    }
   };
 
   useEffect(() => {

@@ -66,8 +66,20 @@ const NotificationPanel = () => {
   }, [token]);
 
   const markAllRead = () => {
+    const unreadIds = notifications.filter((item) => !item.is_read).map((item) => item.notification_id);
     setNotifications((prev) => prev.map((item) => ({ ...item, is_read: true })));
     setUnreadCount(0);
+
+    if (token && unreadIds.length) {
+      Promise.allSettled(
+        unreadIds.map((id) =>
+          fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+    }
   };
 
   const formatTime = (dateStr) => {

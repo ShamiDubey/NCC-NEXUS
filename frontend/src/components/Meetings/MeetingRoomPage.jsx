@@ -12,6 +12,7 @@ import {
   fetchMeetingById,
   fetchParticipants,
   fetchWaitingList,
+  setBriefingMode,
 } from "../../store/meetingSlice";
 import { meetingApi } from "../../api/meetingApi";
 
@@ -365,6 +366,11 @@ const MeetingRoomPage = ({ embedded = false, basePath = "/meetings", meetingIdPr
       onMeetingEnded: (payload = {}) => {
         if (String(payload.meetingId) !== String(meetingId)) return;
         if (onBack) { onBack(); } else { navigate(basePath); }
+      },
+
+      onBriefingMode: (payload = {}) => {
+        if (String(payload.meetingId) !== String(meetingId)) return;
+        dispatch(setBriefingMode({ meetingId, active: Boolean(payload.active) }));
       },
     });
 
