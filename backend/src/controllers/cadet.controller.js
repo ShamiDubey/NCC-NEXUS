@@ -106,37 +106,45 @@ const updateProfile = async (req, res) => {
     }
 
     if (role === "ALUMNI") {
-      if (!imageUrl) {
-        return res.status(400).json({ message: "No profile image provided" });
+      if (!imageUrl && bio === undefined) {
+        return res.status(400).json({ message: "No profile image or bio provided" });
       }
 
-      const updated = await db("users")
-        .where("user_id", resolvedUserId)
-        .update({ profile_image_url: imageUrl });
-
-      if (!updated) {
-        return res.status(404).json({ message: "User not found" });
+      // Bio lives on cadet_profiles (every alumni gets a row at onboarding,
+      // same as cadets/SUOs) — mirrors the generic branch below.
+      if (bio !== undefined && regimental_no) {
+        await db("cadet_profiles").where({ regimental_no }).update({ bio });
       }
 
-      // 🔥 Emit avatar update for feed
-const user = await db("users")
-  .where("user_id", resolvedUserId)
-  .select("college_id")
-  .first();
+      if (imageUrl) {
+        const updated = await db("users")
+          .where("user_id", resolvedUserId)
+          .update({ profile_image_url: imageUrl });
 
-if (user?.college_id) {
-  io.of("/feed")
-    .to(`feed:college:${user.college_id}`)
-    .emit("feed:avatar_update", {
-      user_id: resolvedUserId,
-      profile_image_url: imageUrl,
-    });
-}
+        if (!updated) {
+          return res.status(404).json({ message: "User not found" });
+        }
 
-return res.json({
-  message: "Profile updated successfully",
-  profile_image_url: imageUrl,
-});
+        // 🔥 Emit avatar update for feed
+        const user = await db("users")
+          .where("user_id", resolvedUserId)
+          .select("college_id")
+          .first();
+
+        if (user?.college_id) {
+          io.of("/feed")
+            .to(`feed:college:${user.college_id}`)
+            .emit("feed:avatar_update", {
+              user_id: resolvedUserId,
+              profile_image_url: imageUrl,
+            });
+        }
+      }
+
+      return res.json({
+        message: "Profile updated successfully",
+        profile_image_url: imageUrl,
+      });
     }
 
     const cadetUpdateData = {

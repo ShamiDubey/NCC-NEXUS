@@ -303,6 +303,16 @@ const meetingsSlice = createSlice({
       const key = String(meetingId);
       state.briefingMode[key] = !state.briefingMode[key];
     },
+
+    // Authoritative set, driven by the server's "meeting:briefing_mode"
+    // broadcast — every participant (including the host who toggled it)
+    // syncs to this one value instead of toggling locally, so there is no
+    // race between the clicker's own state and the server's echo.
+    setBriefingMode(state, action) {
+      const { meetingId, active } = action.payload;
+      const key = String(meetingId);
+      state.briefingMode[key] = Boolean(active);
+    },
   },
 
   extraReducers: (builder) => {
@@ -465,6 +475,7 @@ export const {
   joinMeeting,
   leaveMeeting,
   toggleBriefingMode,
+  setBriefingMode,
 } = meetingsSlice.actions;
 
 export default meetingsSlice.reducer;

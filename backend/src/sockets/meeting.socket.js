@@ -3,6 +3,7 @@ const db = require("../db/knex");
 const HOST_GRACE_MS = 60 * 1000;
 const hostSocketPresence = new Map(); // meetingId -> Set(socketId)
 const hostDisconnectedState = new Map(); // meetingId -> boolean
+const briefingModeState = new Map(); // meetingId -> boolean
 
 const toMeetingId = (value) => Number(value);
 const meetingRoomKey = (meetingId) => `meeting_${meetingId}`;
@@ -77,6 +78,12 @@ const initMeetingSocket = (io) => {
       socket.join(meetingRoomKey(id));
       socket.data.meetingRooms.add(id);
 
+      // Sync whoever just joined (or reconnected) to the room's current
+      // briefing-mode state — not just the host who toggled it.
+      if (briefingModeState.get(String(id))) {
+        socket.emit("meeting:briefing_mode", { meetingId: id, active: true });
+      }
+
       const userId = Number(socket.data?.chatUser?.userId || 0);
       if (!isPositiveInt(userId)) return;
 
@@ -89,6 +96,30 @@ const initMeetingSocket = (io) => {
         emitHostReconnected(io, id, userId);
       } catch (error) {
         console.error("meeting:joinRoom handler failed:", error);
+      }
+    });
+
+    // Host-only: flip briefing mode and broadcast the new state to the
+    // whole meeting room (everyone currently joined sees the banner).
+    socket.on("meeting:toggleBriefing", async ({ meetingId }) => {
+      const id = toMeetingId(meetingId);
+      if (!isPositiveInt(id)) return;
+
+      const userId = Number(socket.data?.chatUser?.userId || 0);
+      if (!isPositiveInt(userId)) return;
+
+      try {
+        const meeting = await getMeeting(id);
+        if (!meeting) return;
+        if (Number(meeting.created_by_user_id) !== userId) return; // host-only
+
+        const key = String(id);
+        const next = !briefingModeState.get(key);
+        briefingModeState.set(key, next);
+
+        io.to(meetingRoomKey(id)).emit("meeting:briefing_mode", { meetingId: id, active: next });
+      } catch (error) {
+        console.error("meeting:toggleBriefing handler failed:", error);
       }
     });
 

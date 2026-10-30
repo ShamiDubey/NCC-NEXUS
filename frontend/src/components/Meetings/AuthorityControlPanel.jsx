@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PhoneOff, Shield, Users, Clock } from "lucide-react";
-import { updateMeetingStatusAsync, toggleBriefingMode } from "../../store/meetingSlice";
+import { updateMeetingStatusAsync } from "../../store/meetingSlice";
+import { emitToggleBriefing } from "../../features/ui/socket";
 import { MEETING_STATUS } from "./meetingUtils";
 import "./meetingModule.css";
 
@@ -23,7 +24,11 @@ const AuthorityControlPanel = ({
   };
 
   const handleBriefingToggle = () => {
-    dispatch(toggleBriefingMode({ meetingId: meeting.id }));
+    // No local dispatch here — the server broadcasts "meeting:briefing_mode"
+    // back to the whole room (host included), and that's what updates Redux.
+    // This keeps every participant's banner in sync with the host's actual
+    // click instead of only the host's own browser.
+    emitToggleBriefing(meeting.id);
   };
 
   return (

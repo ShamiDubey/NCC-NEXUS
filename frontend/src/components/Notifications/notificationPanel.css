@@ -132,6 +132,7 @@
 
 .notif-item-unread {
   background: rgba(92, 107, 192, 0.06);
+  cursor: pointer; /* only unread items do anything on click */
 }
 
 .notif-item-unread:hover {

@@ -113,7 +113,7 @@ export default function AlumniDashboard() {
         name: data.name || "Alumni",
         rank: normalizeRankLabel(data.rank, "Alumni"),
         location: [data.unit, data.city].filter(Boolean).join(", "),
-        bio: data.bio || "Alumni profile bio is not editable yet.",
+        bio: data.bio || "No bio added yet.",
       });
 
       const resolvedImage = await resolveProfileImage(data.profile_image_url, defaultProfileImage);
@@ -130,8 +130,12 @@ export default function AlumniDashboard() {
     }
   };
 
-  const updateProfile = async ({ token, imageFile }) => {
+  const updateProfile = async ({ token, bio, imageFile }) => {
   const formData = new FormData();
+
+  if (bio !== undefined) {
+    formData.append("bio", bio || "");
+  }
 
   if (imageFile) {
     formData.append("profile_image", imageFile);
@@ -229,9 +233,24 @@ const startEditBio = () => {
     setIsEditingBio(true);
   };
 
-  const saveBio = () => {
-    alert("Alumni profile editing is not supported by backend yet.");
-    setIsEditingBio(false);
+  const saveBio = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expired. Please login again.");
+      navigate("/");
+      return;
+    }
+
+    const nextBio = tempBio.trim();
+
+    try {
+      await updateProfile({ token, bio: nextBio });
+      setProfileData((prev) => ({ ...prev, bio: nextBio }));
+      setIsEditingBio(false);
+    } catch (error) {
+      console.error("Save Bio Error:", error);
+      alert(`Failed to update profile: ${error.message}`);
+    }
   };
 
   const cancelEditBio = () => {
@@ -302,8 +321,21 @@ const startEditBio = () => {
   }, []);
 
   const markAllReadLocal = () => {
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.notification_id);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
+
+    const token = localStorage.getItem("token");
+    if (token && unreadIds.length) {
+      Promise.allSettled(
+        unreadIds.map((id) =>
+          fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+    }
   };
 
   useEffect(() => {
@@ -462,7 +494,7 @@ const startEditBio = () => {
 
                 {notifOpen && (
                   <div className="topbar-notif-dropdown">
-                    <NotificationPanel />
+                    <NotificationPanel onUnreadChange={setUnreadCount} />
                   </div>
                 )}
               </div>
