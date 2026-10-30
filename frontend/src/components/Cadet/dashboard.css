@@ -876,13 +876,26 @@
 
 /* Side-by-side quiz launch + invited meetings on desktop; the decorative
    duplicate motto banner that used to sit above this card was removed, so
-   the card now stands on its own with a full border on every side. */
+   the card now stands on its own with a full border on every side.
+   align-items: stretch (the grid default) makes both cards match the
+   row's tallest height instead of leaving a blank gap under the shorter
+   one — the quiz card's own flex centering then keeps its content
+   vertically centered in the extra space instead of stuck at the top. */
 .cadet-dashboard .overview-secondary-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: start;
   margin-bottom: 24px;
+}
+
+.cadet-dashboard .overview-secondary-row .cadet-quiz-launch-card {
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.cadet-dashboard .overview-secondary-row .meeting-dash-section {
+  margin-top: 0;
+  height: 100%;
 }
 
 @media (max-width: 860px) {

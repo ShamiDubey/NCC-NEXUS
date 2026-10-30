@@ -866,13 +866,22 @@
 /* Quiz launch + Create Meeting side-by-side on desktop; "My Meetings" below
    full-width since a list benefits from more room. The decorative duplicate
    motto banner this card used to sit flush under was removed, so it now has
-   a full border on every side instead of a bottom-only one. */
+   a full border on every side instead of a bottom-only one.
+   align-items: stretch (the grid default) makes both cards match the row's
+   tallest height instead of leaving a blank gap under the shorter one —
+   each card's own flex centering keeps its content vertically centered in
+   the extra space instead of stuck at the top. */
 .suo-dashboard .overview-secondary-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: start;
   margin-bottom: 24px;
+}
+
+.suo-dashboard .overview-secondary-row .cadet-quiz-launch-card,
+.suo-dashboard .overview-secondary-row .suo-meeting-launch-card {
+  margin-bottom: 0;
+  height: 100%;
 }
 
 @media (max-width: 860px) {
